@@ -163,7 +163,7 @@ def is_safe_project_env_path(env_path: Path, workspace: str | Path) -> tuple[boo
         return True, "ok"  # already gone
 
     if not resolved.is_dir():
-        return False, "路径不是目录"
+        return False, "path is not a directory"
 
     # Allowed: inside <workspace>/envs/
     if is_relative_to(resolved, project_env_root(workspace)):
@@ -177,13 +177,13 @@ def is_safe_project_env_path(env_path: Path, workspace: str | Path) -> tuple[boo
     name = resolved.name.lower()
     dangerous = {"base", "miniconda3", "anaconda3", "root"}
     if name in dangerous:
-        return False, f"路径看起来像是基础环境：{name}"
+        return False, f"path looks like a base environment: {name}"
 
     # Disallowed: current running python
     if sys.executable.startswith(str(resolved)):
-        return False, "不能删除当前正在运行的 Python 环境"
+        return False, "cannot delete the currently running Python environment"
 
-    return False, f"路径不在 workspace/envs 下，也没有项目 marker：{resolved}"
+    return False, f"path is not under workspace/envs and has no project marker: {resolved}"
 
 
 # ── Search ──────────────────────────────────────────────────
@@ -230,10 +230,10 @@ def remove_conda_env(
 ) -> tuple[bool, str]:
     safe, reason = is_safe_project_env_path(env.path, workspace)
     if not safe:
-        return False, f"拒绝删除：{reason}"
+        return False, f"refusing to delete: {reason}"
 
     if not env.path.exists():
-        return True, "环境目录已不存在"
+        return True, "environment directory no longer exists"
 
     conda = conda_executable or shutil.which("conda")
 
@@ -246,36 +246,36 @@ def remove_conda_env(
                 proc = subprocess.run(cmd, capture_output=True, text=True,
                                       encoding="utf-8", errors="ignore", timeout=300)
                 if proc.returncode == 0 and not env.path.exists():
-                    return True, f"已通过 conda 删除：{env.path}"
+                    return True, f"deleted via conda: {env.path}"
             except Exception:
                 pass
 
         if force_rmtree:
             shutil.rmtree(env.path, ignore_errors=True)
-            return True, f"conda 删除失败，已强制删除目录：{env.path}"
-        return False, "conda 删除失败。为避免误删，未直接删除目录。"
+            return True, f"conda deletion failed, directory force-deleted: {env.path}"
+        return False, "conda deletion failed; directory not deleted to avoid accidental removal."
 
     # No conda: only allow rmtree within workspace/envs
     if is_relative_to(env.path, project_env_root(workspace)):
         shutil.rmtree(env.path, ignore_errors=True)
-        return True, f"未找到 conda，已删除目录：{env.path}"
+        return True, f"conda not found, directory deleted: {env.path}"
 
-    return False, "未找到 conda，且路径安全性不足，拒绝删除。"
+    return False, "conda not found and path safety insufficient; refusing to delete."
 
 
 # ── Format ──────────────────────────────────────────────────
 
 def format_env_table(envs: list[ProjectCondaEnv]) -> str:
     lines = [
-        "| 编号 | 环境 | 状态 | Marker | Python | 路径 |",
+        "| # | Environment | Status | Marker | Python | Path |",
         "|---:|---|---:|---|---|",
     ]
     for e in envs:
-        status = "存在" if e.exists else "缺失"
-        marker = "是" if e.has_marker else "旧版"
-        py = "是" if e.python_executable and e.python_executable.exists() else "否"
+        status = "exists" if e.exists else "missing"
+        marker = "yes" if e.has_marker else "legacy"
+        py = "yes" if e.python_executable and e.python_executable.exists() else "no"
         path_str = str(e.path)
         if len(path_str) > 60:
-            path_str = "…" + path_str[-57:]
+            path_str = "..." + path_str[-57:]
         lines.append(f"| {e.index} | `{e.slug[:30]}` | {status} | {marker} | {py} | `{path_str}` |")
     return "\n".join(lines)

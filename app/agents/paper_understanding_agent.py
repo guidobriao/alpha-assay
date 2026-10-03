@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+from app.benchmark.finance_schema import FinanceSpec
 from app.core.file_utils import save_json
 from app.core.progress import emit_progress
 from app.core.state import TaskState, ReproductionBrief
@@ -51,6 +52,48 @@ Return a JSON object with exactly these keys:
 - "confidence": float between 0 and 1
 
 If a field is unclear, return an empty list for that field. Do not invent values."""
+
+
+_FINANCE_PROMPT = """\
+You are a finance research paper extraction assistant. Given paper text, extract \
+the empirical design of an asset-pricing study so it can be replicated exactly.
+
+Return a JSON object with exactly these keys:
+- "is_finance": boolean — true only if the paper is an empirical asset-pricing / \
+quantitative-finance study
+- "hypothesis": string or null — the main hypothesis H1 in one sentence \
+(e.g. "firms with high net share issuance underperform otherwise similar firms")
+- "universe": object or null with keys: description (string or null), \
+exchanges (list of strings), exclusions (list of strings), \
+min_price (number or null), min_market_cap_musd (number or null, millions USD), \
+survivorship ("point_in_time" | "current_constituents" | "unknown"), \
+delisting_treatment (string or null)
+- "sample_period": object or null with keys: start (string "YYYY-MM" or null), \
+end (string "YYYY-MM" or null), \
+frequency ("daily" | "weekly" | "monthly" | "quarterly" | "annual" | "event" | "unknown"), \
+in_sample_end (string "YYYY-MM" or null — the last in-sample period if the paper \
+distinguishes an out-of-sample period), notes (list of strings)
+- "portfolio": object or null with keys: signal (string or null), \
+sort_method (string or null), n_portfolios (integer or null), \
+weighting ("value_weighted" | "equal_weighted" | "unknown"), \
+rebalancing (string or null), \
+formation_lag (string or null — lag between signal measurement and portfolio \
+formation, e.g. "1 month"), holding_period (string or null), \
+long_side (string or null), short_side (string or null)
+- "factor_controls": list of strings — factor models used as controls \
+(e.g. ["FF3", "FF5", "FF5+mom"])
+- "transaction_costs": object or null with keys: included (boolean), \
+bps_per_side (number or null), model_notes (string or null)
+- "winsorization": string or null (e.g. "1%/99%")
+- "data_sources": list of strings (e.g. ["CRSP", "Compustat"])
+- "confidence": float between 0 and 1
+
+Rules:
+- Extract only what the paper states. Use null / empty lists / "unknown" when \
+a detail is unclear. Do not invent values.
+- Pay special attention to: portfolio formation timing relative to signal \
+measurement, survivorship treatment, delisting returns, and breakpoints.
+- If "is_finance" is false, all other keys may be null."""
 
 
 class PaperUnderstandingAgent:
@@ -133,6 +176,41 @@ class PaperUnderstandingAgent:
                 "Understand paper", "benchmark protocol unavailable", level="warning"
             )
 
+        if _looks_like_finance(text):
+            emit_progress(
+                "Understand paper",
+                "finance markers detected, extracting empirical design",
+                detail="hypothesis, universe, period, portfolio construction",
+            )
+            finance_payload = self._llm_extract_finance(text)
+            if finance_payload and finance_payload.get("is_finance"):
+                finance_payload = {
+                    key: value
+                    for key, value in finance_payload.items()
+                    if key != "is_finance"
+                }
+                save_json(task_dir / "paper" / "finance_brief.json", finance_payload)
+                try:
+                    brief.finance = FinanceSpec(**finance_payload)
+                except Exception as exc:
+                    logger.debug(
+                        "finance spec not attached to in-memory brief "
+                        "(field may not exist yet): %s",
+                        exc,
+                    )
+                emit_progress(
+                    "Understand paper",
+                    "finance brief extracted",
+                    detail=f"confidence={finance_payload.get('confidence', 'unknown')}",
+                    finance_confidence=finance_payload.get("confidence"),
+                )
+            else:
+                emit_progress(
+                    "Understand paper",
+                    "finance extraction unavailable or not an asset-pricing study",
+                    level="warning",
+                )
+
         state.reproduction_brief = brief
         save_json(task_dir / "paper" / "reproduction_brief.json", brief)
         if brief.benchmark_protocol:
@@ -201,6 +279,20 @@ class PaperUnderstandingAgent:
             return None
         return result
 
+    def _llm_extract_finance(self, text: str) -> dict | None:
+        # Finance designs describe universe/breakpoints/timing deeper into the
+        # paper than typical CV protocols, so the window is larger here.
+        truncated = text[:16000]
+        result = call_llm_json(
+            system_prompt=_FINANCE_PROMPT,
+            user_prompt=f"Extract the empirical asset-pricing design from this paper text:\n\n{truncated}",
+            purpose="paper_finance_extraction",
+            max_tokens=3072,
+        )
+        if not isinstance(result, dict):
+            return None
+        return result
+
 
 def _merge_links(primary: list[str], secondary: list[str]) -> list[str]:
     merged: list[str] = []
@@ -234,3 +326,41 @@ def _clean_github_url(url: str) -> str | None:
     if parsed:
         return parsed.group(1).rstrip(".,;:)#?]}")
     return url
+
+
+_FINANCE_MARKER_TERMS = [
+    "stock return",
+    "stock returns",
+    "abnormal return",
+    "sharpe ratio",
+    "market capitalization",
+    "market cap",
+    "event study",
+    "factor model",
+    "share repurchase",
+    "buyback",
+    "cross-section of",
+    "cross section of",
+    "book-to-market",
+    "book to market",
+    "decile",
+    "quintile",
+    "momentum strategy",
+    "momentum portfolios",
+    "time series momentum",
+    "trend following",
+    "crsp",
+    "compustat",
+    "portfolio",
+]
+
+
+def _looks_like_finance(text: str) -> bool:
+    """Cheap deterministic gate for the finance-extraction LLM call.
+
+    Multi-word/domain-specific markers only: a false positive costs one
+    extra LLM call, a false negative loses the finance extraction entirely,
+    so the gate is biased toward recall.
+    """
+    haystack = text[:40000].lower()
+    return any(term in haystack for term in _FINANCE_MARKER_TERMS)

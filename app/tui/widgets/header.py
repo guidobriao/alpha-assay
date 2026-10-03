@@ -14,12 +14,12 @@ import time
 
 def _status_cn_short(status: str) -> str:
     mapping = {
-        "draft": "草稿",
-        "running": "运行中",
-        "success": "成功",
-        "failed": "失败",
-        "cancelled": "已取消",
-        "completed": "已完成",
+        "draft": "draft",
+        "running": "running",
+        "success": "success",
+        "failed": "failed",
+        "cancelled": "cancelled",
+        "completed": "completed",
     }
     return mapping.get(status.lower(), status)
 
@@ -131,13 +131,13 @@ class HeaderLogo(Widget):
     def _refresh_summary(self) -> None:
         mode_c = T.PURPLE if self.mode.upper() == "PLAN" else T.GREEN
         status_c = T.status_color(self.status)
-        mode_label = "计划" if self.mode.upper() == "PLAN" else "执行"
+        mode_label = "PLAN" if self.mode.upper() == "PLAN" else "ACT"
         status_label = _status_cn_short(self.status)
         text = (
-            f"[{T.FG_DIM}]会话：[/] [{T.INFO_BORDER}]{self.session_id[:8]}[/]  "
-            f"[{T.FG_DIM}]模式：[/] [bold {mode_c}]{mode_label}[/]  "
-            f"[{T.FG_DIM}]后端：[/] [{T.INFO_BORDER}]{self.backend}[/]  "
-            f"[{T.FG_DIM}]状态：[/] [{status_c}]{status_label}[/]"
+            f"[{T.FG_DIM}]Sessions: [/] [{T.INFO_BORDER}]{self.session_id[:8]}[/]  "
+            f"[{T.FG_DIM}]Mode: [/] [bold {mode_c}]{mode_label}[/]  "
+            f"[{T.FG_DIM}]Backend: [/] [{T.INFO_BORDER}]{self.backend}[/]  "
+            f"[{T.FG_DIM}]Status: [/] [{status_c}]{status_label}[/]"
         )
         try:
             self.query_one("#summary-area", Static).update(text)

@@ -52,6 +52,45 @@ def metric_specs_for_family(task_family: str, metrics: list[str] | None = None) 
             MetricSpec(name="Precision", canonical_name="precision_nlp", direction="higher_is_better", unit="%"),
             MetricSpec(name="Recall", canonical_name="recall", direction="higher_is_better", unit="%"),
         ]
+    # Finance families: spread/alpha sign is the hypothesis itself, so direction
+    # is "informational" here; the finance comparator interprets the sign.
+    if task_family == "cross_sectional_return_prediction":
+        return [
+            MetricSpec(name="Long-Short Return", canonical_name="mean_return_spread",
+                       direction="informational", unit="%/month"),
+            MetricSpec(name="Annualized Alpha", canonical_name="alpha",
+                       direction="informational", unit="%"),
+            MetricSpec(name="Newey-West t-stat", canonical_name="nw_t_stat",
+                       direction="informational"),
+            MetricSpec(name="Sharpe Ratio", canonical_name="sharpe_ratio",
+                       direction="higher_is_better"),
+        ]
+    if task_family == "event_study":
+        return [
+            MetricSpec(name="CAR", canonical_name="car",
+                       direction="informational", unit="%"),
+            MetricSpec(name="t-stat", canonical_name="t_stat",
+                       direction="informational"),
+        ]
+    if task_family == "factor_model_replication":
+        return [
+            MetricSpec(name="Factor Mean Return", canonical_name="factor_mean_return",
+                       direction="informational", unit="%/month"),
+            MetricSpec(name="t-stat", canonical_name="t_stat",
+                       direction="informational"),
+            MetricSpec(name="R2", canonical_name="r2", direction="higher_is_better"),
+        ]
+    if task_family == "time_series_strategy":
+        return [
+            MetricSpec(name="Sharpe Ratio", canonical_name="sharpe_ratio",
+                       direction="higher_is_better"),
+            MetricSpec(name="Information Ratio", canonical_name="information_ratio",
+                       direction="higher_is_better"),
+            MetricSpec(name="Annualized Return", canonical_name="annualized_return",
+                       direction="higher_is_better", unit="%"),
+            MetricSpec(name="Max Drawdown", canonical_name="max_drawdown",
+                       direction="lower_is_better", unit="%"),
+        ]
     # For unknown families, infer MetricSpec from paper-provided metric names
     if metrics:
         return _infer_metric_specs_from_paper(metrics)
@@ -73,7 +112,7 @@ def _infer_metric_specs_from_paper(metrics: list[str]) -> list[MetricSpec]:
 
 
 _LOWER_IS_BETTER_PATTERNS = re.compile(
-    r"(wer|cer|loss|error.?rate|perplexity|latency|time|rmse|mae|mse|l1|l2|distance)",
+    r"(wer|cer|loss|error.?rate|perplexity|latency|time|rmse|mae|mse|l1|l2|distance|drawdown|turnover)",
     re.IGNORECASE,
 )
 
@@ -124,6 +163,34 @@ _FAMILY_TERMS: dict[str, list[str]] = {
     ],
     "sequence_labeling": [
         "sequence labeling", "named entity", "ner", "conll", "span-f1", "flair", "tagger",
+    ],
+    "cross_sectional_return_prediction": [
+        "cross section of stock returns", "cross-section of expected returns",
+        "cross sectional stock returns", "decile portfolios", "quintile portfolios",
+        "long-short portfolio", "long short portfolio", "value weighted",
+        "equal weighted", "nyse breakpoints", "momentum portfolios",
+        "momentum strategy", "momentum effect", "cross-sectional momentum",
+        "size effect", "value premium", "book to market", "book-to-market",
+        "accruals", "share repurchase", "buyback", "net issuance",
+        "crsp", "compustat", "lagged market cap", "formation month",
+    ],
+    "event_study": [
+        "event study", "event window", "estimation window",
+        "cumulative abnormal return", "abnormal return", "market model",
+        "buy and hold abnormal return", "earnings announcement",
+    ],
+    "factor_model_replication": [
+        "fama french", "french data library", "kenneth french", "three factor model",
+        "five factor model", "hml factor", "smb factor", "rmw factor", "cma factor",
+        "high minus low", "small minus big", "robust minus weak",
+        "conservative minus aggressive", "q factor", "grs test",
+        "factor construction", "factor spanning",
+        "25 portfolios formed on size and book to market",
+    ],
+    "time_series_strategy": [
+        "trading strategy", "trend following", "time series momentum",
+        "moving average crossover", "backtest", "backtesting", "sharpe ratio",
+        "transaction costs", "walk forward",
     ],
 }
 
@@ -181,11 +248,18 @@ def classify_task_ontology(
 
 def _infer_family_from_text(haystack: str) -> str:
     """Best-effort family name inference for non-specialist tasks."""
+    finance_signals = [
+        "stock return", "abnormal return", "factor model", "trading strategy",
+        "backtest", "sharpe", "market cap", "portfolio", "event study",
+    ]
     cv_signals = ["detection", "segmentation", "classification", "recognition", "tracking", "depth", "reconstruction"]
     nlp_signals = ["translation", "summarization", "generation", "sentiment", "question answering", "qa"]
     audio_signals = ["speech", "audio", "voice", "speaker", "music"]
     multimodal_signals = ["image-text", "vision-language", "multimodal", "vqa", "image captioning"]
 
+    if any(s in haystack for s in finance_signals):
+        task_hint = next((s for s in finance_signals if s in haystack), "quantitative")
+        return "finance_" + task_hint.replace(" ", "_")
     if any(s in haystack for s in multimodal_signals):
         return "multimodal"
     if any(s in haystack for s in cv_signals):
@@ -202,8 +276,11 @@ def _infer_domain(family: str, datasets: list[str], keywords: list[str], haystac
     cv_datasets = {"coco", "imagenet", "cifar", "pascal", "ade20k", "cityscapes", "kitti"}
     nlp_datasets = {"squad", "glue", "conll", "wnut", "mnli", "qqp"}
     audio_datasets = {"librispeech", "ljspeech", "common voice", "gtzan"}
+    finance_datasets = {"crsp", "compustat", "wrds", "ibes", "kenneth french", "french data library"}
 
     ds_lower = {d.lower() for d in datasets}
+    if ds_lower & finance_datasets:
+        return "finance"
     if ds_lower & cv_datasets:
         return "cv"
     if ds_lower & nlp_datasets:
@@ -211,6 +288,8 @@ def _infer_domain(family: str, datasets: list[str], keywords: list[str], haystac
     if ds_lower & audio_datasets:
         return "audio"
 
+    if any(kw in haystack for kw in ("stock return", "abnormal return", "market cap", "factor model", "sharpe ratio")):
+        return "finance"
     if any(kw in haystack for kw in ("image", "visual", "bounding box", "segmentation", "detection")):
         return "cv"
     if any(kw in haystack for kw in ("text", "language", "token", "sentence", "word", "translation", "generation", "summarization")):
@@ -272,6 +351,12 @@ def _infer_metric_types(metrics: list[str]) -> list[str]:
         types.append("ranking")
     if any(kw in m_str for kw in ("loss", "perplexity")):
         types.append("training_loss")
+    if any(kw in m_str for kw in ("alpha", "sharpe", "information ratio")):
+        types.append("risk_adjusted_return")
+    if any(kw in m_str for kw in ("t-stat", "t statistic", "tstat", "grs")):
+        types.append("significance")
+    if any(kw in m_str for kw in ("spread", "high minus low", "long-short", "long short")):
+        types.append("return_spread")
     return types or ["unknown"]
 
 

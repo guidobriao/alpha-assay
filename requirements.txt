@@ -1,3 +1,10 @@
+# Reference dependency manifests.
+# NOTE: the authoritative dependencies for the app/ pipeline live in
+# pyproject.toml (install with `pip install -e .`). The sections below
+# cover the auxiliary subsystems.
+
+# ==== paperlab/ (paper generation & review) ====
+
 # LLM APIs
 anthropic
 aider-chat
@@ -16,3 +23,13 @@ datasets
 tiktoken
 wandb
 tqdm
+
+# ==== contractgen/ (contract-guided generation) ====
+
+langchain
+langchain-core
+langchain-openai
+langgraph
+openai
+pydantic>=2
+requests

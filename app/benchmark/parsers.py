@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from app.benchmark.finance_schema import FINANCE_TASK_FAMILIES
 from app.benchmark.schema import BenchmarkSpec
 
 
@@ -25,6 +26,13 @@ def parse_metrics(spec: BenchmarkSpec, stdout: str, stderr: str, repo_dir: Path,
     if parser_type == "llm_fallback":
         from app.benchmark.generic_metric_parser import parse_with_llm_fallback
         return parse_with_llm_fallback(spec, stdout, stderr, repo_dir, run_dir)
+    if spec.task_family in FINANCE_TASK_FAMILIES:
+        if parser_type == "finance_json":
+            return parse_finance_json(stdout)
+        result = parse_finance_metrics(stdout + "\n" + stderr)
+        if result:
+            return result
+        return parse_generic_metrics(stdout + "\n" + stderr)
     # Fallback for unknown task families: try generic regex first
     from app.benchmark.schema import KNOWN_TASK_FAMILIES
     if spec.task_family not in KNOWN_TASK_FAMILIES:
@@ -125,6 +133,51 @@ def parse_xfeat_pose_eval(stdout: str) -> dict[str, Any]:
     if pair_match:
         metrics["num_pairs"] = int(pair_match.group(1))
     return metrics
+
+
+# --- Finance metric extraction --------------------------------------------
+
+# Patterns allow negative values: spreads, alphas and drawdowns are
+# frequently negative, and the sign carries the claim.
+_FINANCE_PATTERNS: dict[str, str] = {
+    "sharpe_ratio": r"\bsharpe(?:\s*ratio)?\s*[:=]\s*(-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)",
+    "information_ratio": r"\binformation\s*ratio\s*[:=]\s*(-?\d+(?:\.\d+)?)",
+    "alpha": r"\balpha\s*[:=]\s*(-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)",
+    "beta": r"\bbeta\s*[:=]\s*(-?\d+(?:\.\d+)?)",
+    "nw_t_stat": r"\bnewey[-\s]?west[^:\n=]*?[:=]\s*(-?\d+(?:\.\d+)?)",
+    "t_stat": r"\bt[-\s]?stat(?:istic)?\s*[:=]\s*(-?\d+(?:\.\d+)?)",
+    "max_drawdown": r"\b(?:max(?:imum)?\s*drawdown|mdd)\s*[:=]\s*(-?\d+(?:\.\d+)?)",
+    "annualized_return": r"\bannualized\s*(?:geometric\s*)?return(?:\s*\(%\))?\s*[:=]\s*(-?\d+(?:\.\d+)?)",
+    "mean_return_spread": r"\b(?:return\s*spread|high[-\s]minus[-\s]low|long[-\s]short(?:\s*return)?)\s*[:=]\s*(-?\d+(?:\.\d+)?)",
+    "car": r"\b(?:cumulative\s*abnormal\s*return|car)\s*[:=]\s*(-?\d+(?:\.\d+)?)",
+}
+
+
+def parse_finance_metrics(text: str) -> dict[str, Any]:
+    metrics: dict[str, Any] = {}
+    for key, pattern in _FINANCE_PATTERNS.items():
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if match:
+            try:
+                metrics[key] = float(match.group(1))
+            except ValueError:
+                pass
+    return metrics
+
+
+def parse_finance_json(stdout: str) -> dict[str, Any]:
+    """Parse the JSON emitted by generated finance runners ({"metrics": {...}})."""
+    start = stdout.find("{")
+    end = stdout.rfind("}")
+    if start == -1 or end <= start:
+        return {}
+    try:
+        data = json.loads(stdout[start : end + 1])
+    except Exception:
+        return {}
+    if isinstance(data, dict) and isinstance(data.get("metrics"), dict):
+        return data["metrics"]
+    return data if isinstance(data, dict) else {}
 
 
 def _load_json(path: Path) -> dict[str, Any]:

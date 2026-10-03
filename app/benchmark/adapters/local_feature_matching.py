@@ -231,7 +231,7 @@ class LocalFeatureMatchingAdapter:
 
 def _command_template(base_command: list[str], spec_id: str) -> str:
     if spec_id == "official_megadepth1500_pose_eval":
-        return " ".join([*base_command, "--dataset-dir", "$PAPER_BENCH_MEGDEPTH1500_DIR"])
+        return " ".join([*base_command, "--dataset-dir", "$ALPHA_ASSAY_MEGDEPTH1500_DIR"])
     if spec_id == "official_scannet1500_pose_eval":
-        return " ".join([*base_command, "--scannet_path", "$PAPER_BENCH_SCANNET1500_DIR", "--output", "paper_benchmark_official_scannet1500_pose_eval"])
+        return " ".join([*base_command, "--scannet_path", "$ALPHA_ASSAY_SCANNET1500_DIR", "--output", "paper_benchmark_official_scannet1500_pose_eval"])
     return " ".join(base_command)

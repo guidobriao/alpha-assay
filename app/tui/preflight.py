@@ -27,17 +27,17 @@ def run_preflight() -> list[CheckItem]:
     try:
         root = find_project_root()
         assert root.exists()
-        _record(results, "项目根目录", "pass", str(root), blocking=True)
+        _record(results, "Project root", "pass", str(root), blocking=True)
     except Exception as e:
-        _record(results, "项目根目录", "fail", str(e), blocking=True)
+        _record(results, "Project root", "fail", str(e), blocking=True)
 
     # 2. logo/logo.png
     logo = find_project_root() / "logo" / "logo.png"
-    _record(results, "Logo 文件", "pass" if logo.exists() else "fail",
-            str(logo) if logo.exists() else "未找到", blocking=False)
+    _record(results, "Logo file", "pass" if logo.exists() else "fail",
+            str(logo) if logo.exists() else "not found", blocking=False)
 
     # 3. Python version
-    _record(results, "Python 版本", "pass", f"Python {sys.version.split()[0]}")
+    _record(results, "Python version", "pass", f"Python {sys.version.split()[0]}")
 
     # 4. Git
     git = shutil.which("git")
@@ -46,9 +46,9 @@ def run_preflight() -> list[CheckItem]:
             ver = subprocess.run([git, "--version"], capture_output=True, text=True, timeout=5).stdout.strip()
             _record(results, "Git", "pass", ver)
         except Exception:
-            _record(results, "Git", "fail", "无法执行")
+            _record(results, "Git", "fail", "cannot execute")
     else:
-        _record(results, "Git", "fail", "未找到")
+        _record(results, "Git", "fail", "not found")
 
     # 5. Conda
     conda = shutil.which("conda")
@@ -57,9 +57,9 @@ def run_preflight() -> list[CheckItem]:
             ver = subprocess.run([conda, "--version"], capture_output=True, text=True, timeout=10).stdout.strip()
             _record(results, "Conda", "pass", ver)
         except Exception:
-            _record(results, "Conda", "fail", "无法执行")
+            _record(results, "Conda", "fail", "cannot execute")
     else:
-        _record(results, "Conda", "fail", "未找到（将限制为 none/local 后端）", blocking=False)
+        _record(results, "Conda", "fail", "not found (limited to none/local backends)", blocking=False)
 
     # 6. Workspace writable
     try:
@@ -68,31 +68,31 @@ def run_preflight() -> list[CheckItem]:
         test = ws / ".preflight_test"
         test.write_text("ok", encoding="utf-8")
         test.unlink()
-        _record(results, "工作目录", "pass", str(ws))
+        _record(results, "Workspace", "pass", str(ws))
     except Exception as e:
-        _record(results, "工作目录", "fail", str(e), blocking=True)
+        _record(results, "Workspace", "fail", str(e), blocking=True)
 
     # 7. PDF dir
     try:
         pdf = project_pdf_dir()
         pdf.mkdir(parents=True, exist_ok=True)
-        _record(results, "PDF 目录", "pass", str(pdf))
+        _record(results, "PDF directory", "pass", str(pdf))
     except Exception as e:
-        _record(results, "PDF 目录", "fail", str(e), blocking=False)
+        _record(results, "PDF directory", "fail", str(e), blocking=False)
 
     # 8. Textual / Rich / Pillow
     for pkg in ("textual", "rich"):
         try:
             __import__(pkg)
-            _record(results, f"依赖 {pkg}", "pass", "已安装")
+            _record(results, f"Dependency {pkg}", "pass", "installed")
         except ImportError:
-            _record(results, f"依赖 {pkg}", "fail", "未安装", blocking=True)
+            _record(results, f"Dependency {pkg}", "fail", "not installed", blocking=True)
 
     try:
         from PIL import Image as _  # noqa: F401
-        _record(results, "依赖 Pillow", "pass", "已安装")
+        _record(results, "Dependency Pillow", "pass", "installed")
     except ImportError:
-        _record(results, "依赖 Pillow", "fail", "未安装（院徽 logo 无法渲染，非阻塞）", blocking=False)
+        _record(results, "Dependency Pillow", "fail", "not installed (emblem logo will not render, non-blocking)", blocking=False)
 
     # 9. CUDA (non-blocking)
     nvidia_smi = shutil.which("nvidia-smi")
@@ -103,11 +103,11 @@ def run_preflight() -> list[CheckItem]:
             if r.returncode == 0:
                 _record(results, "NVIDIA CUDA", "pass", r.stdout.strip().split("\n")[0])
             else:
-                _record(results, "NVIDIA CUDA", "fail", "nvidia-smi 返回异常", blocking=False)
+                _record(results, "NVIDIA CUDA", "fail", "nvidia-smi returned an error", blocking=False)
         except Exception:
-            _record(results, "NVIDIA CUDA", "fail", "无法查询", blocking=False)
+            _record(results, "NVIDIA CUDA", "fail", "query failed", blocking=False)
     else:
-        _record(results, "NVIDIA CUDA", "fail", "未检测到（非阻塞）", blocking=False)
+        _record(results, "NVIDIA CUDA", "fail", "not detected (non-blocking)", blocking=False)
 
     # 10. Network
     try:
@@ -116,11 +116,11 @@ def run_preflight() -> list[CheckItem]:
             capture_output=True, timeout=5,
         )
         if proc.returncode == 0:
-            _record(results, "网络连接", "pass", "PyPI 可达")
+            _record(results, "Network", "pass", "PyPI reachable")
         else:
-            _record(results, "网络连接", "fail", "PyPI 不可达（可能影响自动安装）", blocking=False)
+            _record(results, "Network", "fail", "PyPI unreachable (may affect auto-install)", blocking=False)
     except Exception:
-        _record(results, "网络连接", "fail", "检查超时（非阻塞）", blocking=False)
+        _record(results, "Network", "fail", "check timed out (non-blocking)", blocking=False)
 
     return results
 

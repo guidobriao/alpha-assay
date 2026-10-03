@@ -82,7 +82,7 @@ re-implement from this description alone.)
 
 ### 3. Save Output
 
-Write this to `paper_reproduction_output/paper_reading/extracted_methodology.md`.
+Write this to `replication_output/paper_reading/extracted_methodology.md`.
 
 ### 4. Write TaskLog Entries
 

@@ -23,4 +23,8 @@ Finance-specific components: finance ontology, data access agent, leakage detect
 
 ## Licensing
 
-Third-party components are included under their original licenses — see `LICENSE.*` files.
+Per-component licenses:
+
+- `LICENSE` (MIT) — `app/`, `contractgen/`, project code
+- `orchestrator/LICENSE.polyform-noncommercial` — the orchestrator skill and its agent guides (non-commercial use only; note that Part I of `AGENTS.md` is covered by this license)
+- `LICENSE.ai_scientist` — `paperlab/` and `templates/`

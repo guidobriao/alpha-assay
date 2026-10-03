@@ -14,27 +14,27 @@ from ..display_utils import clean_display_text
 # ── Labels ────────────────────────────────────────────────
 
 _STAGE_CN: dict[str, str] = {
-    "Ingest paper": "解析论文",
-    "Understand paper": "理解论文",
-    "Search GitHub": "搜索 GitHub",
-    "Evaluate repo": "评估仓库",
-    "Build conda env": "构建 conda 环境",
-    "Build virtualenv": "构建虚拟环境",
-    "Build Docker image": "构建 Docker 镜像",
-    "Run smoke command": "运行冒烟测试",
-    "Run benchmark reproduction": "运行 benchmark 复现",
-    "Run simple reproduction": "运行轻量复现",
-    "Write report": "生成报告",
+    "Ingest paper": "Ingest paper",
+    "Understand paper": "Understand paper",
+    "Search GitHub": "Search GitHub",
+    "Evaluate repo": "Evaluate repo",
+    "Build conda env": "Build conda env",
+    "Build virtualenv": "Build virtualenv",
+    "Build Docker image": "Build Docker image",
+    "Run smoke command": "Run smoke command",
+    "Run benchmark reproduction": "Run benchmark reproduction",
+    "Run simple reproduction": "Run simple reproduction",
+    "Write report": "Write report",
 }
 
 _STATUS_CN: dict[str, str] = {
-    "queued": "等待",
-    "running": "运行中",
-    "success": "完成",
-    "failed": "失败",
-    "skipped": "跳过",
-    "cancelled": "取消",
-    "disabled": "禁用",
+    "queued": "queued",
+    "running": "running",
+    "success": "success",
+    "failed": "failed",
+    "skipped": "skipped",
+    "cancelled": "cancelled",
+    "disabled": "disabled",
 }
 
 _ICON_MAP: dict[str, str] = {
@@ -90,8 +90,8 @@ class ToolCard(Widget):
     """
 
     BINDINGS = [
-        Binding("enter", "toggle_collapsed", "展开/折叠", show=False),
-        Binding("space", "toggle_collapsed", "展开/折叠", show=False),
+        Binding("enter", "toggle_collapsed", "Expand/collapse", show=False),
+        Binding("space", "toggle_collapsed", "Expand/collapse", show=False),
     ]
 
     class StatusChanged(Message):
@@ -155,7 +155,7 @@ class ToolCard(Widget):
             return
 
         # Heartbeat: replace instead of stacking
-        if clean.startswith("仍在运行："):
+        if clean.startswith("Still running: "):
             self.upsert_log("heartbeat", clean)
             return
 

@@ -58,7 +58,7 @@ class Composer(Widget):
         super().__init__(**kwargs)
         self._mode = mode
         self._running = False
-        self._default = placeholder or "输入 PDF 路径，或 /help 查看命令"
+        self._default = placeholder or "Enter a PDF path, or /help for commands"
         self._placeholder = self._default
 
         self._completion_items: list[CompletionItem] = []
@@ -246,7 +246,7 @@ class Composer(Widget):
     def set_running(self, running: bool) -> None:
         self._running = running
         if running:
-            self._placeholder = "Agent 运行中 · 可用 /status /logs /cancel"
+            self._placeholder = "Agent running · /status /logs /cancel available"
         else:
             self._placeholder = self._default
         self._update_placeholder()
@@ -255,7 +255,7 @@ class Composer(Widget):
         self._mode = mode.lower()
         if not self._running:
             if self._mode == "plan":
-                self._placeholder = "PLAN 模式：输入 /act 切换执行，或 /run 查看计划"
+                self._placeholder = "PLAN mode: /act to switch to execution, or /run to preview the plan"
             else:
                 self._placeholder = self._default
         self._update_placeholder()

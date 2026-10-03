@@ -11,9 +11,9 @@ def download_with_progress(url, target, dataset_name):
 
     target = Path(target)
     target.parent.mkdir(parents=True, exist_ok=True)
-    timeout_seconds = float(os.environ.get("PAPER_BENCH_DATA_DOWNLOAD_TIMEOUT_SECONDS", "900"))
-    progress_seconds = float(os.environ.get("PAPER_BENCH_DOWNLOAD_PROGRESS_SECONDS", "10"))
-    chunk_size = int(os.environ.get("PAPER_BENCH_DOWNLOAD_CHUNK_BYTES", str(1024 * 1024)))
+    timeout_seconds = float(os.environ.get("ALPHA_ASSAY_DATA_DOWNLOAD_TIMEOUT_SECONDS", "900"))
+    progress_seconds = float(os.environ.get("ALPHA_ASSAY_DOWNLOAD_PROGRESS_SECONDS", "10"))
+    chunk_size = int(os.environ.get("ALPHA_ASSAY_DOWNLOAD_CHUNK_BYTES", str(1024 * 1024)))
     deadline = time.monotonic() + timeout_seconds if timeout_seconds > 0 else None
     request = urllib.request.Request(url, headers={"User-Agent": "paper-benchmark-runner/1.0"})
     bytes_read = 0

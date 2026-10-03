@@ -132,11 +132,11 @@ def _read_architecture_debug_json(output_dir: Any, filename: str) -> Any | None:
         return None
 
 _METHOD_SPINE_HINTS: dict[str, tuple[str, ...]] = {
-    "entrypoint": ("entry", "entrypoint", "main", "cli", "run", "启动", "入口", "主入口"),
-    "artifact": ("artifact", "result", "metric", "report", "prediction", "output", "产物", "结果", "指标"),
-    "config": ("config", "configs", "yaml", "yml", "json", "toml", "配置"),
-    "data": ("data", "dataset", "loader", "preprocess", "数据"),
-    "evaluation": ("eval", "metric", "benchmark", "score", "validation", "评估"),
+    "entrypoint": ("entry", "entrypoint", "main", "cli", "run", "startup", "entry", "main entry"),
+    "artifact": ("artifact", "result", "metric", "report", "prediction", "output", "artifact", "result", "metric"),
+    "config": ("config", "configs", "yaml", "yml", "json", "toml", "config"),
+    "data": ("data", "dataset", "loader", "preprocess", "data"),
+    "evaluation": ("eval", "metric", "benchmark", "score", "validation", "evaluation"),
 }
 
 _CONTRACT_TOKEN_STOPWORDS = {
@@ -2229,7 +2229,7 @@ def _unit_positive_obligations(unit: Any, *, limit: int = 8) -> list[str]:
             token in value.lower()
             for token in (
                 "implement",
-                "实现",
+                "implementation",
                 "expose",
                 "create",
                 "write",
@@ -2238,12 +2238,12 @@ def _unit_positive_obligations(unit: Any, *, limit: int = 8) -> list[str]:
                 "compute",
                 "record",
                 "save",
-                "提供",
-                "创建",
-                "写出",
-                "支持",
-                "记录",
-                "保存",
+                "provide",
+                "create",
+                "write",
+                "support",
+                "record",
+                "save",
             )
         ):
             items.append(value)
@@ -2274,7 +2274,7 @@ def _payload_positive_obligations(unit: dict[str, Any], *, limit: int = 8) -> li
             token in value.lower()
             for token in (
                 "implement",
-                "实现",
+                "implementation",
                 "expose",
                 "create",
                 "write",
@@ -2283,12 +2283,12 @@ def _payload_positive_obligations(unit: dict[str, Any], *, limit: int = 8) -> li
                 "compute",
                 "record",
                 "save",
-                "提供",
-                "创建",
-                "写出",
-                "支持",
-                "记录",
-                "保存",
+                "provide",
+                "create",
+                "write",
+                "support",
+                "record",
+                "save",
             )
         ):
             items.append(value)

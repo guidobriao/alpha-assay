@@ -76,7 +76,7 @@ class ZeroShotClassificationAdapter:
                     public=entry.public,
                     notes=["Generic CLIP-style zero-shot classification runner."],
                 ),
-                model=ModelSpec(name="env PAPER_BENCH_CLIP_MODEL or ViT-B/32", checkpoint_source="official"),
+                model=ModelSpec(name="env ALPHA_ASSAY_CLIP_MODEL or ViT-B/32", checkpoint_source="official"),
                 command=["python", script_name] if root else [],
                 command_kind="generated_runner" if root else "manual_protocol",
                 expected_metrics=metric_specs_for_family("zero_shot_classification"),
@@ -186,8 +186,8 @@ def load_dataset(dataset_id, root):
 dataset_id = {dataset_id!r}
 root = {root!r}
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model_name = os.environ.get("PAPER_BENCH_CLIP_MODEL", "ViT-B/32")
-max_examples = int(os.environ.get("PAPER_BENCH_MAX_EXAMPLES", "1000"))
+model_name = os.environ.get("ALPHA_ASSAY_CLIP_MODEL", "ViT-B/32")
+max_examples = int(os.environ.get("ALPHA_ASSAY_MAX_EXAMPLES", "1000"))
 templates = ["a photo of a {{}}.", "a blurry photo of a {{}}.", "a photo of the {{}}."]
 model, preprocess = clip.load(model_name, device=device)
 dataset, classes = load_dataset(dataset_id, root)

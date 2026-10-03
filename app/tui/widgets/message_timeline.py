@@ -64,12 +64,12 @@ class MessageBubble(Widget):
         }
         color = color_map.get(self._kind, T.FG)
         kind_names = {
-            "user": "用户",
+            "user": "user",
             "assistant": "Agent",
-            "tool": "工具",
-            "error": "错误",
-            "system": "系统",
-            "report": "报告",
+            "tool": "tool",
+            "error": "error",
+            "system": "System",
+            "report": "report",
         }
         label_display = self._label or kind_names.get(self._kind, self._kind)
         label_padded = f"[bold {color}]{label_display:<8}[/]"
@@ -130,7 +130,7 @@ class MessageTimeline(VerticalScroll):
     def add_assistant(self, text: str) -> MessageBubble:
         return self.add_message(text, kind="assistant")
 
-    def add_tool(self, text: str, label: str = "工具") -> MessageBubble:
+    def add_tool(self, text: str, label: str = "tool") -> MessageBubble:
         return self.add_message(text, kind="tool", label=label)
 
     def add_error(self, text: str) -> MessageBubble:

@@ -17,6 +17,11 @@ class BenchmarkDatasetEntry:
     estimated_size_gb: float | None = None
     auto_download: bool = False
     public: bool | None = True
+    # Domain metadata (populated for finance entries; None for other families)
+    frequency: str | None = None
+    license: str | None = None
+    access: str | None = None
+    coverage: str | None = None
 
 
 @dataclass(frozen=True)
@@ -33,7 +38,7 @@ DATASETS: dict[str, BenchmarkDatasetEntry] = {
         dataset_id="megadepth1500",
         name="MegaDepth-1500",
         task_family="local_feature_matching",
-        env_var="PAPER_BENCH_MEGDEPTH1500_DIR",
+        env_var="ALPHA_ASSAY_MEGDEPTH1500_DIR",
         aliases=("megadepth", "megadepth-1500", "mega1500"),
         metrics=("AUC@5", "AUC@10", "AUC@20", "mAcc@5", "mAcc@10", "mAcc@20"),
         size_estimate="external eval subset, often >1GB",
@@ -43,7 +48,7 @@ DATASETS: dict[str, BenchmarkDatasetEntry] = {
         dataset_id="scannet1500",
         name="ScanNet-1500",
         task_family="local_feature_matching",
-        env_var="PAPER_BENCH_SCANNET1500_DIR",
+        env_var="ALPHA_ASSAY_SCANNET1500_DIR",
         aliases=("scannet", "scannet-1500"),
         metrics=("AUC@5", "AUC@10", "AUC@20", "mAcc@5", "mAcc@10", "mAcc@20"),
         size_estimate="external eval subset, often >1GB",
@@ -53,7 +58,7 @@ DATASETS: dict[str, BenchmarkDatasetEntry] = {
         dataset_id="hpatches",
         name="HPatches",
         task_family="local_feature_matching",
-        env_var="PAPER_BENCH_HPATCHES_DIR",
+        env_var="ALPHA_ASSAY_HPATCHES_DIR",
         aliases=("hpatches", "hpatches-sequences", "hpatches benchmark"),
         metrics=("MMA", "matching accuracy", "homography accuracy"),
         size_estimate="HPatches image sequences are commonly around 1-2GB depending on packaging",
@@ -63,7 +68,7 @@ DATASETS: dict[str, BenchmarkDatasetEntry] = {
         dataset_id="phototourism",
         name="PhotoTourism",
         task_family="local_feature_matching",
-        env_var="PAPER_BENCH_PHOTOTOURISM_DIR",
+        env_var="ALPHA_ASSAY_PHOTOTOURISM_DIR",
         aliases=("phototourism", "photo tourism", "image matching challenge", "imc"),
         metrics=("AUC@5", "AUC@10", "AUC@20", "mAA"),
         size_estimate="PhotoTourism/Image Matching Challenge data is an external multi-GB benchmark",
@@ -73,7 +78,7 @@ DATASETS: dict[str, BenchmarkDatasetEntry] = {
         dataset_id="yfcc100m",
         name="YFCC100M",
         task_family="local_feature_matching",
-        env_var="PAPER_BENCH_YFCC100M_DIR",
+        env_var="ALPHA_ASSAY_YFCC100M_DIR",
         aliases=("yfcc", "yfcc100m", "yfcc 100m"),
         metrics=("AUC@5", "AUC@10", "AUC@20", "mAA"),
         size_estimate="YFCC100M is a very large external collection; full data is far beyond smoke benchmark scope",
@@ -83,7 +88,7 @@ DATASETS: dict[str, BenchmarkDatasetEntry] = {
         dataset_id="librispeech",
         name="LibriSpeech",
         task_family="asr",
-        env_var="PAPER_BENCH_LIBRISPEECH_DIR",
+        env_var="ALPHA_ASSAY_LIBRISPEECH_DIR",
         aliases=("librispeech", "test-clean", "test-other"),
         metrics=("WER", "CER", "RTF"),
         size_estimate="LibriSpeech test-clean is about 0.34GB; full corpus is much larger",
@@ -94,7 +99,7 @@ DATASETS: dict[str, BenchmarkDatasetEntry] = {
         dataset_id="conll03",
         name="CoNLL-03",
         task_family="sequence_labeling",
-        env_var="PAPER_BENCH_CONLL03_DIR",
+        env_var="ALPHA_ASSAY_CONLL03_DIR",
         aliases=("conll", "conll03", "conll-03", "conll2003"),
         metrics=("Precision", "Recall", "F1"),
         size_estimate="small, usually <0.02GB",
@@ -105,7 +110,7 @@ DATASETS: dict[str, BenchmarkDatasetEntry] = {
         dataset_id="cifar100",
         name="CIFAR-100",
         task_family="zero_shot_classification",
-        env_var="PAPER_BENCH_CIFAR100_DIR",
+        env_var="ALPHA_ASSAY_CIFAR100_DIR",
         aliases=("cifar100", "cifar-100"),
         metrics=("Top-1 Accuracy", "Top-5 Accuracy"),
         size_estimate="about 0.16GB",
@@ -116,12 +121,122 @@ DATASETS: dict[str, BenchmarkDatasetEntry] = {
         dataset_id="imagenet",
         name="ImageNet",
         task_family="zero_shot_classification",
-        env_var="PAPER_BENCH_IMAGENET_DIR",
+        env_var="ALPHA_ASSAY_IMAGENET_DIR",
         aliases=("imagenet", "ilsvrc"),
         metrics=("Top-1 Accuracy", "Top-5 Accuracy"),
         size_estimate="about 144GB for ILSVRC classification data",
         estimated_size_gb=144.0,
         public=None,
+    ),
+    # --- Finance datasets -------------------------------------------------
+    # Open-access: Kenneth French data library (factor returns + portfolio
+    # sorts). Small monthly CSV archives, freely downloadable.
+    "french_factors": BenchmarkDatasetEntry(
+        dataset_id="french_factors",
+        name="Kenneth French Data Library — Factor Returns",
+        task_family="factor_model_replication",
+        env_var="ALPHA_ASSAY_FRENCH_FACTORS_DIR",
+        aliases=(
+            "french", "fama french", "fama-french", "kenneth french",
+            "french data library", "ff3", "ff5", "three factor", "five factor",
+            "momentum factor", "market factor",
+        ),
+        metrics=("factor mean return", "t-stat", "alpha", "GRS"),
+        size_estimate="monthly factor CSV archives are a few MB each",
+        estimated_size_gb=0.05,
+        auto_download=True,
+        public=True,
+        frequency="monthly",
+        license="public",
+        access="open_download",
+        coverage="US market factor returns (Mkt-RF, SMB, HML, RMW, CMA, Mom), 1926-07 to present",
+    ),
+    "french_portfolios": BenchmarkDatasetEntry(
+        dataset_id="french_portfolios",
+        name="Kenneth French Data Library — Portfolio Sorts",
+        task_family="cross_sectional_return_prediction",
+        env_var="ALPHA_ASSAY_FRENCH_PORTFOLIOS_DIR",
+        aliases=(
+            "french portfolios", "25 portfolios", "100 portfolios",
+            "size and book-to-market portfolios", "48 industry portfolios",
+            "49 industry portfolios", "10 industry portfolios",
+            "prior returns portfolios", "sorted portfolios",
+        ),
+        metrics=("value weighted return", "equal weighted return", "alpha"),
+        size_estimate="monthly portfolio-sort CSV archives are a few MB each",
+        estimated_size_gb=0.05,
+        auto_download=True,
+        public=True,
+        frequency="monthly",
+        license="public",
+        access="open_download",
+        coverage="US test portfolios formed on size, value, momentum, investment, and industry",
+    ),
+    # Subscription-licensed: resolved to a local extract via env var, never
+    # downloaded by the agent.
+    "crsp": BenchmarkDatasetEntry(
+        dataset_id="crsp",
+        name="CRSP US Stock Database",
+        task_family="cross_sectional_return_prediction",
+        env_var="ALPHA_ASSAY_CRSP_DIR",
+        aliases=("crsp", "crsp daily stock", "crsp monthly stock"),
+        metrics=("raw return", "delisting return", "market cap"),
+        size_estimate="full US equities history is very large; extracts depend on study scope",
+        estimated_size_gb=None,
+        auto_download=False,
+        public=False,
+        frequency="daily",
+        license="WRDS / CRSP subscription",
+        access="wrds_subscription",
+        coverage="US equities, 1925-12 to present, including delisting returns",
+    ),
+    "compustat": BenchmarkDatasetEntry(
+        dataset_id="compustat",
+        name="Compustat Fundamentals",
+        task_family="cross_sectional_return_prediction",
+        env_var="ALPHA_ASSAY_COMPUSTAT_DIR",
+        aliases=("compustat", "compustat fundamentals", "north america fundamentals"),
+        metrics=("book equity", "earnings", "accruals"),
+        size_estimate="fundamentals extracts depend on study scope",
+        estimated_size_gb=None,
+        auto_download=False,
+        public=False,
+        frequency="quarterly",
+        license="WRDS subscription",
+        access="wrds_subscription",
+        coverage="North America fundamentals, 1950 to present",
+    ),
+    "ibes": BenchmarkDatasetEntry(
+        dataset_id="ibes",
+        name="IBES Analyst Forecasts",
+        task_family="event_study",
+        env_var="ALPHA_ASSAY_IBES_DIR",
+        aliases=("ibes", "analyst forecasts", "analyst estimates"),
+        metrics=("forecast error", "dispersion", "recommendation returns"),
+        size_estimate="IBES extracts depend on study scope",
+        estimated_size_gb=None,
+        auto_download=False,
+        public=False,
+        frequency="monthly",
+        license="WRDS subscription",
+        access="wrds_subscription",
+        coverage="analyst detail and summary files, 1976 to present",
+    ),
+    "wrds": BenchmarkDatasetEntry(
+        dataset_id="wrds",
+        name="WRDS (generic)",
+        task_family="factor_model_replication",
+        env_var="ALPHA_ASSAY_WRDS_DIR",
+        aliases=("wrds", "wharton research data services"),
+        metrics=(),
+        size_estimate="depends on the tables requested",
+        estimated_size_gb=None,
+        auto_download=False,
+        public=False,
+        frequency=None,
+        license="WRDS subscription",
+        access="wrds_subscription",
+        coverage="multi-dataset academic finance platform",
     ),
 }
 
@@ -187,7 +302,7 @@ def data_root(dataset_id: str, paper_slug: str | None = None, workspace_dir: str
         if found:
             return str(found)
 
-    generic_root = os.environ.get("PAPER_BENCH_DATA_ROOT")
+    generic_root = os.environ.get("ALPHA_ASSAY_DATA_ROOT")
     if not generic_root:
         return None
     found = _find_dataset_under_root(Path(generic_root), entry, paper_slug)
@@ -197,7 +312,7 @@ def data_root(dataset_id: str, paper_slug: str | None = None, workspace_dir: str
 def expected_data_root(dataset_id: str, paper_slug: str | None = None, workspace_dir: str | Path | None = None) -> Path | None:
     if workspace_dir is not None and paper_slug:
         return Path(workspace_dir) / "datasets" / paper_slug / dataset_id
-    generic_root = os.environ.get("PAPER_BENCH_DATA_ROOT")
+    generic_root = os.environ.get("ALPHA_ASSAY_DATA_ROOT")
     if generic_root and paper_slug:
         return Path(generic_root) / paper_slug / dataset_id
     if generic_root:
@@ -252,7 +367,7 @@ def missing_data_reason(dataset_id: str, paper_slug: str | None = None, workspac
     expected = expected_data_root(dataset_id, paper_slug, workspace_dir)
     reason = (
         f"{entry.name} dataset path is not configured. Set {entry.env_var} "
-        f"or place the dataset under PAPER_BENCH_DATA_ROOT/{entry.dataset_id}."
+        f"or place the dataset under ALPHA_ASSAY_DATA_ROOT/{entry.dataset_id}."
     )
     if expected:
         reason += f" Preferred paper-named cache path: {expected}."

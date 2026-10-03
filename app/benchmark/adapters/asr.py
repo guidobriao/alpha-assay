@@ -70,7 +70,7 @@ class ASRAdapter:
                 notes=["Generic ASR benchmark runner over LibriSpeech-style .trans.txt references."],
             ),
             model=ModelSpec(
-                name="env PAPER_BENCH_ASR_MODEL or tiny",
+                name="env ALPHA_ASSAY_ASR_MODEL or tiny",
                 checkpoint_source="official",
                 notes=["Model size is configurable to separate protocol wiring from resource budget."],
             ),
@@ -210,7 +210,7 @@ if {allow_download!r}:
     root.mkdir(parents=True, exist_ok=True)
     if not any(root.rglob("*.flac")):
         archive = root / "test-clean.tar.gz"
-        url = os.environ.get("PAPER_BENCH_LIBRISPEECH_URL", "https://www.openslr.org/resources/12/test-clean.tar.gz")
+        url = os.environ.get("ALPHA_ASSAY_LIBRISPEECH_URL", "https://www.openslr.org/resources/12/test-clean.tar.gz")
         try:
             print(json.dumps({{"stage": "download_dataset", "dataset": "librispeech-test-clean", "target": str(root), "url": url}}), flush=True)
             download_with_progress(url, archive, "librispeech-test-clean")
@@ -219,8 +219,8 @@ if {allow_download!r}:
         except Exception as exc:
             raise SystemExit(f"Failed to download LibriSpeech test-clean into {{root}}: {{exc}}")
 
-max_items = int(os.environ.get("PAPER_BENCH_MAX_EXAMPLES", "200"))
-model_name = os.environ.get("PAPER_BENCH_ASR_MODEL", "tiny")
+max_items = int(os.environ.get("ALPHA_ASSAY_MAX_EXAMPLES", "200"))
+model_name = os.environ.get("ALPHA_ASSAY_ASR_MODEL", "tiny")
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = whisper.load_model(model_name, device=device)
 

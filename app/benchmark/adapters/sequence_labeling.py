@@ -71,7 +71,7 @@ class SequenceLabelingAdapter:
                     "If no local file exists, the generated runner can materialize a small CoNLL-03 style split via datasets.",
                 ],
             ),
-            model=ModelSpec(name="env PAPER_BENCH_SEQUENCE_TAGGER_MODEL or ner", checkpoint_source="official"),
+            model=ModelSpec(name="env ALPHA_ASSAY_SEQUENCE_TAGGER_MODEL or ner", checkpoint_source="official"),
             command=command,
             command_kind="generated_runner" if root else "manual_protocol",
             expected_metrics=metric_specs_for_family("sequence_labeling"),
@@ -252,7 +252,7 @@ def safe_extract_zip(archive, dest):
 
 
 def maybe_download_conll_url(root):
-    url = os.environ.get("PAPER_BENCH_CONLL03_URL")
+    url = os.environ.get("ALPHA_ASSAY_CONLL03_URL")
     if not url:
         return None
     target_name = url.rstrip("/").rsplit("/", 1)[-1] or "conll03_download"
@@ -277,9 +277,9 @@ def materialize_hf_conll03(root):
     datasets = ensure_external_dependency("datasets")
     if datasets is None:
         raise ImportError("Hugging Face datasets is required to materialize CoNLL-03")
-    dataset_name = os.environ.get("PAPER_BENCH_CONLL03_DATASET", "conll2003")
-    split_name = os.environ.get("PAPER_BENCH_CONLL03_SPLIT", "test")
-    trust_remote_code = os.environ.get("PAPER_BENCH_HF_TRUST_REMOTE_CODE", "false").lower() in {{"1", "true", "yes", "on"}}
+    dataset_name = os.environ.get("ALPHA_ASSAY_CONLL03_DATASET", "conll2003")
+    split_name = os.environ.get("ALPHA_ASSAY_CONLL03_SPLIT", "test")
+    trust_remote_code = os.environ.get("ALPHA_ASSAY_HF_TRUST_REMOTE_CODE", "false").lower() in {{"1", "true", "yes", "on"}}
     print(json.dumps({{"stage": "download_dataset", "dataset": dataset_name, "split": split_name, "target": str(root)}}), flush=True)
     ds = datasets.load_dataset(dataset_name, trust_remote_code=trust_remote_code)
     if split_name not in ds:
@@ -348,7 +348,7 @@ ensure_external_dependency("datasets")
 if {allow_download!r}:
     root.mkdir(parents=True, exist_ok=True)
     if find_test_file(root, required=False) is None:
-        timeout_seconds = float(os.environ.get("PAPER_BENCH_DATA_DOWNLOAD_TIMEOUT_SECONDS", "900"))
+        timeout_seconds = float(os.environ.get("ALPHA_ASSAY_DATA_DOWNLOAD_TIMEOUT_SECONDS", "900"))
         try:
             test_candidate = maybe_download_conll_url(root)
             if test_candidate is None:
@@ -357,8 +357,8 @@ if {allow_download!r}:
         except Exception as exc:
             raise SystemExit(f"Failed to prepare CoNLL-03 data in {{root}}: {{exc}}")
 
-max_sentences = int(os.environ.get("PAPER_BENCH_MAX_EXAMPLES", "500"))
-model_name = os.environ.get("PAPER_BENCH_SEQUENCE_TAGGER_MODEL", "ner")
+max_sentences = int(os.environ.get("ALPHA_ASSAY_MAX_EXAMPLES", "500"))
+model_name = os.environ.get("ALPHA_ASSAY_SEQUENCE_TAGGER_MODEL", "ner")
 test_file = find_test_file(root)
 data = read_conll(test_file, max_sentences)
 tagger = SequenceTagger.load(model_name)

@@ -156,7 +156,7 @@ Quick health check — this informs retry strategy later:
 
 ### 5. Output Format
 
-Write to `paper_reproduction_output/paper_reading/resource_map.md`:
+Write to `replication_output/paper_reading/resource_map.md`:
 
 ```markdown
 # Resource Map

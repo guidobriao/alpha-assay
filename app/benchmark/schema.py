@@ -4,6 +4,8 @@ from typing import Any, List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
+from app.benchmark.finance_schema import FinanceSpec
+
 
 BenchmarkLevel = Literal["L0", "L1", "L2", "L3"]
 
@@ -16,13 +18,17 @@ KNOWN_TASK_FAMILIES: frozenset[str] = frozenset({
     "zero_shot_classification",
     "asr",
     "sequence_labeling",
+    "cross_sectional_return_prediction",
+    "event_study",
+    "factor_model_replication",
+    "time_series_strategy",
 })
 
 
 class TaskOntology(BaseModel):
     """Rich taxonomy information for a benchmark task."""
     family: str
-    domain: Optional[str] = None         # "cv" | "nlp" | "audio" | "multimodal" | "rl" | "other"
+    domain: Optional[str] = None         # "cv" | "nlp" | "audio" | "multimodal" | "rl" | "finance" | "other"
     input_modalities: List[str] = Field(default_factory=list)    # ["image", "text", "audio", ...]
     output_modalities: List[str] = Field(default_factory=list)   # ["class_label", "bounding_boxes", ...]
     metric_types: List[str] = Field(default_factory=list)        # ["accuracy", "error_rate", "f1", ...]
@@ -76,6 +82,8 @@ class BenchmarkSpec(BaseModel):
     command_kind: Literal["official_script", "generated_runner", "readme_example", "manual_protocol"] = "official_script"
     expected_metrics: list[MetricSpec] = Field(default_factory=list)
     parser: dict[str, Any] = Field(default_factory=dict)
+    # Domain-specific extension: populated only for finance task families.
+    finance: Optional[FinanceSpec] = None
     reference: dict[str, Any] = Field(default_factory=dict)
     feasibility: dict[str, Any] = Field(default_factory=dict)
     generated_script_name: Optional[str] = None

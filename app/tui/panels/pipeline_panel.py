@@ -28,27 +28,27 @@ PIPELINE_STAGES: list[str] = [
 ]
 
 STAGE_LABELS_CN: dict[str, str] = {
-    "Ingest paper": "解析论文",
-    "Understand paper": "理解论文",
-    "Search GitHub": "搜索 GitHub",
-    "Evaluate repo": "评估仓库",
-    "Build conda env": "构建 conda 环境",
-    "Build virtualenv": "构建虚拟环境",
-    "Build Docker image": "构建 Docker 镜像",
-    "Run smoke command": "运行冒烟测试",
-    "Run benchmark reproduction": "运行 benchmark 复现",
-    "Run simple reproduction": "运行轻量复现",
-    "Write report": "生成报告",
+    "Ingest paper": "Ingest paper",
+    "Understand paper": "Understand paper",
+    "Search GitHub": "Search GitHub",
+    "Evaluate repo": "Evaluate repo",
+    "Build conda env": "Build conda env",
+    "Build virtualenv": "Build virtualenv",
+    "Build Docker image": "Build Docker image",
+    "Run smoke command": "Run smoke command",
+    "Run benchmark reproduction": "Run benchmark reproduction",
+    "Run simple reproduction": "Run simple reproduction",
+    "Write report": "Write report",
 }
 
 STATUS_LABELS_CN: dict[str, str] = {
-    "queued": "等待中",
-    "running": "运行中",
-    "success": "成功",
-    "failed": "失败",
-    "skipped": "已跳过",
-    "disabled": "未启用",
-    "cancelled": "已取消",
+    "queued": "queued",
+    "running": "running",
+    "success": "success",
+    "failed": "failed",
+    "skipped": "skipped",
+    "disabled": "disabled",
+    "cancelled": "cancelled",
 }
 
 _BUILD_STAGES = {"Build conda env", "Build virtualenv", "Build Docker image"}
@@ -183,7 +183,7 @@ class PipelinePanel(Widget):
                 msg += f" [{sv.attempts}]"
             line = f"[{color}]{icon} {label}[/][{T.FG_DIM}]{dur}{msg}[/]"
             lines.append(line)
-        content = "\n".join(lines) if lines else "[dim]暂无流水线数据[/]"
+        content = "\n".join(lines) if lines else "[dim]no pipeline data yet[/]"
         try:
             self.query_one("#pipeline-body", Static).update(content)
         except Exception:
@@ -191,7 +191,7 @@ class PipelinePanel(Widget):
 
     def compose(self) -> ComposeResult:
         with VerticalScroll():
-            yield Static("[bold]流水线[/]", id="pipeline-title")
+            yield Static("[bold]Pipeline[/]", id="pipeline-title")
             yield Static("", id="pipeline-body")
 
     def on_mount(self) -> None:

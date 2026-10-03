@@ -66,14 +66,14 @@ def _cleanup_killed_task_files(task_dir: str | None) -> None:
 
 # Help categories: grouped command names in display order
 _HELP_CATEGORIES: dict[str, list[str]] = {
-    "输入": ["input", "arxiv", "download-arxiv", "repo", "repo-dir"],
-    "运行": ["backend", "workspace", "timeout", "repairs", "run", "cancel"],
-    "查看": ["status", "logs", "report", "artifact", "open-report"],
-    "模式": ["plan", "act", "mode"],
-    "界面": ["panel"],
-    "会话": ["sessions", "resume", "reset"],
-    "系统": ["help", "clear", "quit", "exit"],
-    "环境": ["conda-envs", "envs"],
+    "Input": ["input", "arxiv", "download-arxiv", "repo", "repo-dir"],
+    "running": ["backend", "workspace", "timeout", "repairs", "run", "cancel"],
+    "View": ["status", "logs", "report", "artifact", "open-report"],
+    "Mode": ["plan", "act", "mode"],
+    "Interface": ["panel"],
+    "Sessions": ["sessions", "resume", "reset"],
+    "System": ["help", "clear", "quit", "exit"],
+    "Environment": ["conda-envs", "envs"],
 }
 
 
@@ -144,15 +144,15 @@ class PaperAgentApp(App):
     }
     """
 
-    TITLE = "Paper Reproduct Agent"
+    TITLE = "Alpha-Assay"
     BINDINGS = [
-        Binding("ctrl+c", "quit", "退出", show=True),
-        Binding("ctrl+l", "clear_screen", "清屏", show=True),
+        Binding("ctrl+c", "quit", "Quit", show=True),
+        Binding("ctrl+l", "clear_screen", "Clear", show=True),
         Binding("ctrl+p", "toggle_plan_mode", "PLAN/ACT", show=True),
-        Binding("tab", "accept_completion", "补全", show=False),
-        Binding("down", "completion_down", "下一个补全", show=False),
-        Binding("up", "completion_up", "上一个补全", show=False),
-        Binding("escape", "hide_completion", "关闭补全", show=False),
+        Binding("tab", "accept_completion", "Completion", show=False),
+        Binding("down", "completion_down", "Next completion", show=False),
+        Binding("up", "completion_up", "Previous completion", show=False),
+        Binding("escape", "hide_completion", "Hide completion", show=False),
     ]
 
     def __init__(
@@ -257,16 +257,16 @@ class PaperAgentApp(App):
 
         self._composer.focus_input()
         self._add_assistant(
-            "欢迎使用 **Paper Reproduct Agent**。\n\n"
-            "输入本地论文 PDF 路径开始，例如：\n\n"
+            "Welcome to **Alpha-Assay**.\n\n"
+            "Enter a local paper PDF path to start, e.g.:\n\n"
             "    `@/path/to/paper.pdf`\n\n"
-            "常用命令：\n"
+            "Common commands:\n"
             "  `/backend conda`\n"
             "  `/repo https://github.com/user/repo`\n"
             "  `/run`\n"
             "  `/logs smoke`\n"
             "  `/report`\n\n"
-            "输入 `/help` 查看所有命令。"
+            "Enter `/help` to see all commands."
         )
         self._update_status()
         self._sync_session_panel()
@@ -277,10 +277,10 @@ class PaperAgentApp(App):
         failed = [r for r in results if getattr(r, "status", "") == "fail"]
         if not failed:
             return
-        lines = ["启动检查存在警告：", ""]
+        lines = ["Startup checks reported warnings:", ""]
         for item in failed:
-            level = "阻塞项" if getattr(item, "blocking", False) else "非阻塞"
-            lines.append(f"- {item.name}：{item.message}（{level}）")
+            level = "blocking" if getattr(item, "blocking", False) else "non-blocking"
+            lines.append(f"- {item.name}: {item.message} ({level})")
         self._add_assistant("\n".join(lines))
 
     # ── Message helpers ──────────────────────────────────────
@@ -500,36 +500,36 @@ class PaperAgentApp(App):
     # ── Progress handling ────────────────────────────────────
 
     _STAGE_LABELS_CN: dict[str, str] = {
-        "Ingest paper": "解析论文",
-        "Understand paper": "理解论文",
-        "Search GitHub": "搜索 GitHub",
-        "Evaluate repo": "评估仓库",
-        "Build conda env": "构建 conda 环境",
-        "Build virtualenv": "构建虚拟环境",
-        "Build Docker image": "构建 Docker 镜像",
-        "Decide runtime": "判断运行环境",
-        "Run smoke command": "运行冒烟测试",
-        "Run benchmark reproduction": "运行 benchmark 复现",
-        "Run simple reproduction": "运行轻量复现",
-        "Write report": "生成报告",
-        "Download arXiv PDF": "下载 arXiv PDF",
+        "Ingest paper": "Ingest paper",
+        "Understand paper": "Understand paper",
+        "Search GitHub": "Search GitHub",
+        "Evaluate repo": "Evaluate repo",
+        "Build conda env": "Build conda env",
+        "Build virtualenv": "Build virtualenv",
+        "Build Docker image": "Build Docker image",
+        "Decide runtime": "Decide runtime",
+        "Run smoke command": "Run smoke command",
+        "Run benchmark reproduction": "Run benchmark reproduction",
+        "Run simple reproduction": "Run simple reproduction",
+        "Write report": "Write report",
+        "Download arXiv PDF": "Download arXiv PDF",
     }
 
     _PHASE_LABELS_CN: dict[str, str] = {
-        "start": "开始",
-        "progress": "运行",
-        "finish": "完成",
-        "fail": "失败",
-        "skip": "跳过",
+        "start": "start",
+        "progress": "running",
+        "finish": "success",
+        "fail": "failed",
+        "skip": "skipped",
     }
 
     _DATA_KEY_LABELS_CN: dict[str, str] = {
-        "repo_url": "仓库地址",
-        "repo_dir": "仓库目录",
-        "command": "执行命令",
-        "log_path": "日志路径",
-        "selected_repo": "选中仓库",
-        "runnable_score": "可运行评分",
+        "repo_url": "Repo URL",
+        "repo_dir": "Repo directory",
+        "command": "Command",
+        "log_path": "logpath",
+        "selected_repo": "Selected repo",
+        "runnable_score": "Runnable score",
     }
 
     def _handle_progress_event(
@@ -596,7 +596,7 @@ class PaperAgentApp(App):
 
         if ev.phase == "fail":
             self._add_error(
-                f"{self._STAGE_LABELS_CN.get(name, name)} 失败：{ev.message}"
+                f"{self._STAGE_LABELS_CN.get(name, name)} failed: {ev.message}"
             )
 
         if self._status_bar:
@@ -684,7 +684,7 @@ class PaperAgentApp(App):
             val = ev.data.get(key)
             if val:
                 _add(
-                    f"{self._DATA_KEY_LABELS_CN.get(key, key)}：{clean_display_text(str(val))}"
+                    f"{self._DATA_KEY_LABELS_CN.get(key, key)}: {clean_display_text(str(val))}"
                 )
 
         raw_lines = ev.data.get("log_lines")
@@ -721,12 +721,12 @@ class PaperAgentApp(App):
         if self.agent_running and command not in RUNNING_SAFE_COMMANDS:
             if command == "!":
                 self._add_assistant(
-                    "Agent 正在运行，暂不允许执行 shell 命令。"
-                    "可用 /status /logs /cancel 查看或控制任务。"
+                    "Agent is running; shell commands are not allowed right now."
+                    "Use /status /logs /cancel to inspect or control the task."
                 )
             else:
                 safe = " ".join(f"/{c}" for c in sorted(RUNNING_SAFE_COMMANDS))
-                self._add_assistant(f"Agent 正在运行。可用命令：{safe}")
+                self._add_assistant(f"Agent is running. Available commands: {safe}")
             return
 
         if command == "!":
@@ -780,8 +780,8 @@ class PaperAgentApp(App):
         handler = handlers.get(command)
         if handler is None:
             self._add_assistant(
-                f"未知命令 /{command}。输入 /help 查看可用命令。\n"
-                f"用法示例：/{command} <参数>"
+                f"Unknown command /{command}. Enter /help for available commands.\n"
+                f"Usage: /{command} <args>"
             )
             return
         handler(args)
@@ -790,7 +790,7 @@ class PaperAgentApp(App):
 
     def _cmd_help(self, args: str) -> None:
         cat = args.strip() if args else ""
-        lines: list[str] = ["## 可用命令", ""]
+        lines: list[str] = ["## Available commands", ""]
         shown = False
         for cat_name, cmds in _HELP_CATEGORIES.items():
             if cat and cat_name != cat:
@@ -808,9 +808,9 @@ class PaperAgentApp(App):
             lines.append("")
         if not shown and cat:
             cats = ", ".join(_HELP_CATEGORIES.keys())
-            lines.append(f"类别 '{cat}' 未找到。可用：{cats}")
+            lines.append(f"Category '{cat}' not found. Available: {cats}")
         if not lines:
-            lines = ["输入 `/help` 查看所有命令。"]
+            lines = ["Enter `/help` to see all commands."]
         self._add_assistant("\n".join(lines))
 
     def _handle_unknown_command(self, text: str) -> None:
@@ -822,7 +822,7 @@ class PaperAgentApp(App):
 
         suggestions = complete_command(f"/{cmd_name}", limit=4)
         if suggestions:
-            sug_lines = [f"未知命令：`/{cmd_name}`", "", "你可能想输入："]
+            sug_lines = [f"Unknown command: `/{cmd_name}`", "", "Did you mean:"]
             for s in suggestions:
                 arg_str = (
                     f" {s.display_args or s.args}" if (s.display_args or s.args) else ""
@@ -831,8 +831,8 @@ class PaperAgentApp(App):
             self._add_assistant("\n".join(sug_lines))
         else:
             self._add_assistant(
-                f"未知命令：`/{cmd_name}`。\n"
-                "输入 `/help` 查看可用命令，或输入本地 PDF 路径开始复现。"
+                f"Unknown command: `/{cmd_name}`. \n"
+                "Enter `/help` for available commands, or a local PDF path to start replication. "
             )
 
     def _cmd_clear(self, _: str) -> None:
@@ -848,24 +848,24 @@ class PaperAgentApp(App):
                 self._current_stage or "", self._current_stage or "-"
             )
             self._add_assistant(
-                "## 当前任务正在运行\n\n"
-                f"- 当前阶段：**{stage_label}**\n"
-                f"- 阶段消息：{self._current_stage_message or '-'}\n"
-                f"- 后端：`{self.session.backend}`\n"
-                f"- 论文：`{self.session.paper_path or '-'}`\n"
-                f"- 已运行：{elapsed:.1f}s\n"
-                "- 可用命令：`/status` `/logs` `/cancel`\n"
+                "## Task running\n\n"
+                f"- Current stage: **{stage_label}**\n"
+                f"- Stage message: {self._current_stage_message or '-'}\n"
+                f"- Backend: `{self.session.backend}`\n"
+                f"- Paper: `{self.session.paper_path or '-'}`\n"
+                f"- Elapsed: {elapsed:.1f}s\n"
+                "- Available commands: `/status` `/logs` `/cancel`\n"
             )
             return
 
         s = self.session
         if not s.task_dir:
-            self._add_assistant("当前会话尚未运行过任务。")
+            self._add_assistant("No task has run in this session yet.")
             return
         try:
             state = load_state(s.task_dir)
             self._add_assistant(
-                f"**任务状态**\n\n"
+                f"**Task status**\n\n"
                 f"- Task: `{state.task_id}`\n"
                 f"- Status: `{state.status}`\n"
                 f"- Task dir: `{state.task_dir}`"
@@ -873,42 +873,42 @@ class PaperAgentApp(App):
             if state.report:
                 self._add_assistant(f"- Final status: `{state.report.final_status}`")
         except Exception as e:
-            self._add_error(f"无法加载状态：{e}")
+            self._add_error(f"Cannot load state: {e}")
 
     def _cmd_plan(self, _: str) -> None:
         self.session.mode = "plan"
         self._update_status()
         if self._composer:
             self._composer.set_mode("plan")
-        self._add_assistant("已切换到 **[PLAN]** 模式 —— 只分析规划，不执行命令。")
+        self._add_assistant("Switched to **[PLAN]** mode — analysis only, no commands executed.")
 
     def _cmd_act(self, _: str) -> None:
         self.session.mode = "act"
         self._update_status()
         if self._composer:
             self._composer.set_mode("act")
-        self._add_assistant("已切换到 **[ACT]** 模式 —— 允许执行。")
+        self._add_assistant("Switched to **[ACT]** mode — execution allowed.")
 
     def _cmd_mode(self, _: str) -> None:
-        self._add_assistant(f"当前模式：**{self.session.mode.upper()}**")
+        self._add_assistant(f"Current mode: **{self.session.mode.upper()}**")
 
     def _cmd_input(self, args: str) -> None:
         self.session.paper_path = args.strip().lstrip("@")
         self.session.input_resolved = False
         self._sync_session_panel()
-        self._add_assistant(f"输入已设置：`{self.session.paper_path}`")
+        self._add_assistant(f"Input set: `{self.session.paper_path}`")
 
     def _cmd_arxiv(self, args: str) -> None:
         value = args.strip()
         if not value:
             self._add_error(
-                "用法：`/arxiv <arXiv ID 或 URL>`，例如 `/arxiv https://arxiv.org/abs/1911.11763`"
+                "Usage: `/arxiv <arXiv ID or URL>`, e.g. `/arxiv https://arxiv.org/abs/1911.11763`"
             )
             return
         if self.agent_running:
-            self._add_error("Agent 正在运行，请等待任务完成或先 `/cancel`。")
+            self._add_error("Agent is running; wait for completion or `/cancel` first.")
             return
-        self._add_assistant(f"开始从 arXiv 下载 PDF：`{value}`")
+        self._add_assistant(f"Starting arXiv PDF download: `{value}`")
         self.run_worker(self._download_arxiv_worker(value), exclusive=False)
 
     async def _download_arxiv_worker(self, value: str) -> None:
@@ -923,7 +923,7 @@ class PaperAgentApp(App):
             if phase == "start":
                 self.call_from_thread(
                     lambda: self._add_system(
-                        f"arXiv 下载开始\n- URL：{event.get('pdf_url')}\n- 保存：{event.get('pdf_path')}"
+                        f"arXiv download started\n- URL: {event.get('pdf_url')}\n- Saved to: {event.get('pdf_path')}"
                     )
                 )
             elif phase == "progress":
@@ -931,7 +931,7 @@ class PaperAgentApp(App):
                 dl = int(event.get("downloaded") or 0)
                 tot = int(event.get("total") or 0)
                 bar = arxiv_bar(pct)
-                msg = f"{bar} 已下载 {dl / 1024 / 1024:.1f} MiB"
+                msg = f"{bar} Downloaded {dl / 1024 / 1024:.1f} MiB"
                 if tot:
                     msg += f" / {tot / 1024 / 1024:.1f} MiB"
                 final_msg = msg
@@ -940,7 +940,7 @@ class PaperAgentApp(App):
                 )
             elif phase == "finish":
                 self.call_from_thread(
-                    lambda: self._upsert_arxiv_progress("下载完成，正在导入")
+                    lambda: self._upsert_arxiv_progress("Download complete, importing")
                 )
 
         result = await asyncio.to_thread(
@@ -957,67 +957,67 @@ class PaperAgentApp(App):
             self.session.status = "draft"
             self._sync_session_panel()
             self._update_status()
-            reused = "（复用已有文件）" if result.reused_existing else ""
+            reused = " (reusing existing file)" if result.reused_existing else ""
             self._add_assistant(
-                f"arXiv PDF 下载完成{reused}。\n\n"
-                f"- arXiv ID：`{result.arxiv_id}`\n"
-                f"- PDF：`{result.pdf_path}`\n\n"
-                "已自动设为当前论文。现在可以执行 `/run`。"
+                f"arXiv PDF download complete{reused}. \n\n"
+                f"- arXiv ID: `{result.arxiv_id}`\n"
+                f"- PDF: `{result.pdf_path}`\n\n"
+                "Set as the current paper. You can now run `/run`."
             )
             card = self._get_active_tool_card("Download arXiv PDF")
             if card:
-                card.update(status="success", message="下载 arXiv PDF")
+                card.update(status="success", message="Download arXiv PDF")
         else:
-            self._add_error(f"arXiv PDF 下载失败：{result.error or '未知错误'}")
+            self._add_error(f"arXiv PDF download failed: {result.error or 'unknown error'}")
 
     def _upsert_arxiv_progress(self, text: str) -> None:
         stage = "Download arXiv PDF"
-        card = self._get_or_create_tool_card(stage, "下载 arXiv PDF")
+        card = self._get_or_create_tool_card(stage, "Download arXiv PDF")
         card.upsert_log("arxiv_download", text)
-        card.update(status="running", message="下载 arXiv PDF")
+        card.update(status="running", message="Download arXiv PDF")
 
     def _cmd_repo(self, args: str) -> None:
         self.session.repo = args.strip() or None
         self._sync_session_panel()
-        self._add_assistant(f"仓库：{self.session.repo or '-'}")
+        self._add_assistant(f"Repository: {self.session.repo or '-'}")
 
     def _cmd_repo_dir(self, args: str) -> None:
         self.session.repo_dir = args.strip().lstrip("@")
         self._sync_session_panel()
-        self._add_assistant(f"本地仓库：{self.session.repo_dir}")
+        self._add_assistant(f"Local repository: {self.session.repo_dir}")
 
     def _cmd_backend(self, args: str) -> None:
         backend = args.strip().lower()
         if backend:
             if backend not in {"none", "local", "venv", "conda", "docker"}:
                 self._add_error(
-                    "后端必须是：none、local、venv、conda 或 docker\n用法：`/backend conda`"
+                    "Backend must be: none, local, venv, conda or docker\nUsage: `/backend conda`"
                 )
                 return
             self.session.backend = backend
             self._sync_session_panel()
             if backend == "none":
                 self._add_assistant(
-                    "已切换到 **none** 模式：只做静态分析，不执行代码。\n\n"
-                    "该模式将执行：解析论文 → 理解论文 → 搜索 GitHub → 评估仓库 → 生成报告\n"
-                    "不会执行：构建环境、smoke 测试、benchmark 复现、轻量复现\n\n"
-                    "如需运行复现步骤，请使用 `/backend conda`。"
+                    "Switched to **none** mode: static analysis only, no code execution.\n\n"
+                    "This mode will run: Ingest paper → Understand paper → Search GitHub → Evaluate repo → Write report\n"
+                    "It will NOT run: environment builds, smoke test, benchmark reproduction, lightweight reproduction\n\n"
+                    "To run reproduction steps, use `/backend conda`."
                 )
             elif backend == "conda":
                 self._add_assistant(
-                    "已切换到 **conda** 模式：将构建 conda 环境并执行 smoke/Benchmark/轻量复现。"
+                    "Switched to the **conda**  mode: will build a conda environment and run smoke/benchmark/lightweight reproduction."
                 )
             elif backend == "venv":
                 self._add_assistant(
-                    "已切换到 **venv** 模式：将构建虚拟环境并执行 smoke/Benchmark/轻量复现。"
+                    "Switched to the **venv**  mode: will build a virtualenv and run smoke/benchmark/lightweight reproduction."
                 )
             elif backend == "local":
                 self._add_assistant(
-                    "已切换到 **local** 模式：跳过环境构建，直接在本地执行 smoke/Benchmark/轻量复现。"
+                    "Switched to the **local**  mode: skipping environment build, running smoke/benchmark/lightweight reproduction directly on the host."
                 )
             elif backend == "docker":
                 self._add_assistant(
-                    "已切换到 **docker** 模式：将构建 Docker 镜像并执行 smoke/Benchmark/轻量复现。"
+                    "Switched to the **docker**  mode: will build a Docker image and run smoke/benchmark/lightweight reproduction."
                 )
             if self._pipeline_panel:
                 self._pipeline_panel.reset(backend)
@@ -1026,52 +1026,52 @@ class PaperAgentApp(App):
                 f"**{b}**" if b == self.session.backend else b
                 for b in ["none", "local", "venv", "conda", "docker"]
             )
-            self._add_assistant(f"可用后端：{opts}\n当前：**{self.session.backend}**")
+            self._add_assistant(f"Available backends: {opts}\ncurrent: **{self.session.backend}**")
 
     def _cmd_workspace(self, args: str) -> None:
         self.session.workspace = args.strip() or self.session.workspace
         self._sync_session_panel()
-        self._add_assistant(f"工作目录：`{self.session.workspace}`")
+        self._add_assistant(f"Workspace: `{self.session.workspace}`")
 
     def _cmd_timeout(self, args: str) -> None:
         try:
             self.session.timeout_minutes = int(args.strip())
             self._sync_session_panel()
-            self._add_assistant(f"超时：{self.session.timeout_minutes} 分钟")
+            self._add_assistant(f"Timeout: {self.session.timeout_minutes} minutes")
         except (ValueError, TypeError):
-            self._add_error("用法：`/timeout <分钟数>`（整数）")
+            self._add_error("Usage: `/timeout <minutes>` (integer)")
 
     def _cmd_repairs(self, args: str) -> None:
         try:
             self.session.max_repair_attempts = int(args.strip())
             self._sync_session_panel()
-            self._add_assistant(f"最大修复次数：{self.session.max_repair_attempts}")
+            self._add_assistant(f"Max repair attempts: {self.session.max_repair_attempts}")
         except (ValueError, TypeError):
-            self._add_error("用法：`/repairs <次数>`（整数）")
+            self._add_error("Usage: `/repairs <n>` (integer)")
 
     def _cmd_panel(self, args: str) -> None:
         name = args.strip().lower() or "pipeline"
         valid = {"session", "pipeline", "help", "artifacts", "none"}
         if name not in valid:
-            self._add_error(f"面板必须是：{', '.join(valid)}\n用法：`/panel help`")
+            self._add_error(f"Panel must be one of: {', '.join(valid)}\nUsage: `/panel help`")
             return
         self._switch_panel(name)
-        self._add_system(f"已切换到 **{name}** 面板")
+        self._add_system(f"Switched to the **{name}** panel")
 
     def _cmd_artifact(self, _: str) -> None:
         self._switch_panel("artifacts")
         self._sync_artifact_panel()
         if not self.session.task_dir:
-            self._add_assistant("尚未运行任务，没有产物。输入 `/run` 开始。")
+            self._add_assistant("No task has run yet — no artifacts. Enter `/run` to start.")
         else:
-            self._add_assistant(f"当前 task dir: `{self.session.task_dir}`")
+            self._add_assistant(f"Current task dir: `{self.session.task_dir}`")
 
     def _cmd_open_report(self, _: str) -> None:
         if not self.session.report_path:
-            self._add_assistant("尚未生成报告。输入 `/run` 开始。")
+            self._add_assistant("No report generated yet. Enter `/run` to start.")
             return
         rp = self.session.report_path
-        self._add_report_msg(f"报告路径：`{rp}`")
+        self._add_report_msg(f"Report path: `{rp}`")
 
     def _cmd_reset(self, _: str) -> None:
         self.session.paper_path = None
@@ -1087,7 +1087,7 @@ class PaperAgentApp(App):
         self._active_tool_by_stage.clear()
         if self._pipeline_panel:
             self._pipeline_panel.reset(self.session.backend)
-        self._add_assistant("会话已重置（磁盘文件未删除）。")
+        self._add_assistant("Session reset (disk files kept).")
 
     @staticmethod
     def _status_label(status: str) -> str:
@@ -1098,48 +1098,48 @@ class PaperAgentApp(App):
     def _cmd_run(self, _: str) -> None:
         paper = self.session.paper_path
         if not paper:
-            self._add_error("请先使用 /input <pdf路径> 设置论文文件。")
+            self._add_error("Set the paper file first with /input <pdf path>.")
             return
 
         if not Path(paper).is_file():
-            self._add_error(f"文件不存在：`{paper}`")
+            self._add_error(f"File not found: `{paper}`")
             return
 
-        self._add_user(f"复现论文：{paper}")
-        self._add_assistant("收到，正在确认本地 PDF 是否可读取。")
+        self._add_user(f"Replicating paper: {paper}")
+        self._add_assistant("Got it, checking that the local PDF is readable.")
 
         # Warn if backend=none
         if self.session.backend == "none":
             self._add_assistant(
-                "当前执行后端为 **none**。\n\n"
-                "该模式将执行：\n"
-                "- 解析论文\n"
-                "- 理解论文\n"
-                "- 搜索 GitHub\n"
-                "- 评估仓库\n"
-                "- 生成报告\n\n"
-                "不会执行：\n"
-                "- 构建 conda / venv / docker 环境\n"
-                "- smoke 测试\n"
-                "- benchmark 复现\n"
-                "- 轻量复现\n\n"
-                "如需运行后续复现步骤，请先输入 `/backend conda`。"
+                "The current backend is **none**.\n\n"
+                "This mode will run:\n"
+                "- Ingest paper\n"
+                "- Understand paper\n"
+                "- Search GitHub\n"
+                "- Evaluate repo\n"
+                "- Write report\n\n"
+                "It will NOT run:\n"
+                "- conda / venv / docker environment builds\n"
+                "- smoke test\n"
+                "- benchmark reproduction\n"
+                "- lightweight reproduction\n\n"
+                "To run later reproduction steps, enter `/backend conda` first. "
             )
 
         if self.session.mode == "plan":
             self._add_assistant(
-                "当前为 **PLAN** 模式，只显示执行计划。\n"
-                "Pipeline 将会运行以下阶段：\n"
-                "1. 解析论文 PDF\n"
-                "2. LLM 分析任务\n"
-                "3. GitHub 搜索\n"
-                "4. 仓库评估\n"
-                "5. 构建环境\n"
-                "6. Smoke 测试\n"
-                "7. Benchmark 复现\n"
-                "8. 轻量复现\n"
-                "9. 写报告\n\n"
-                "输入 `/act` 切换模式后重试 `/run`。"
+                "Currently in **PLAN** mode: showing the execution plan only.\n"
+                "The pipeline will run these stages:\n"
+                "1. Ingest paper PDF\n"
+                "2. LLM task analysis\n"
+                "3. GitHub search\n"
+                "4. Repository evaluation\n"
+                "5. Environment build\n"
+                "6. Smoke test\n"
+                "7. Benchmark reproduction\n"
+                "8. Lightweight reproduction\n"
+                "9. Report writing\n\n"
+                "Enter `/act` to switch mode, then retry `/run`."
             )
             return
 
@@ -1213,14 +1213,14 @@ class PaperAgentApp(App):
             )
             if final == "repo_found_smoke_not_run" and self.session.backend == "none":
                 self._add_assistant(
-                    f"**Pipeline 完成**\n\n"
-                    f"已完成静态评估。当前 backend=none，因此未执行代码复现步骤。\n"
+                    f"**Pipeline success**\n\n"
+                    f"Static evaluation completed. backend=none, so no code reproduction steps were executed.\n"
                     f"- Final status: `{final}`\n"
                     f"- Report: `{report_path}`"
                 )
             else:
                 self._add_assistant(
-                    f"**Pipeline 完成**\n\n"
+                    f"**Pipeline success**\n\n"
                     f"- Final status: `{final}`\n"
                     f"- Report: `{report_path}`"
                 )
@@ -1236,7 +1236,7 @@ class PaperAgentApp(App):
 
         except Exception as e:
             self.session.status = "failed"
-            self._add_error(f"Pipeline 异常：{e}")
+            self._add_error(f"Pipeline exception: {e}")
         finally:
             # Don't overwrite killed state
             if self._force_kill_requested:
@@ -1259,14 +1259,14 @@ class PaperAgentApp(App):
 
     def _cmd_cancel(self, _: str) -> None:
         if not self.agent_running:
-            self._add_assistant("当前没有运行中的任务。")
+            self._add_assistant("No task is currently running.")
             return
         self.session.cancel_requested = True
-        self._add_system("已请求取消。等待当前步骤完成……")
+        self._add_system("Cancellation requested. Waiting for the current step...")
 
     def _cmd_kill(self, _: str) -> None:
         if not self.agent_running:
-            self._add_assistant("当前没有正在运行的任务。")
+            self._add_assistant("No task is currently running. ")
             return
 
         self.session.cancel_requested = True
@@ -1275,15 +1275,15 @@ class PaperAgentApp(App):
         self._sync_session_panel()
         self._update_status()
 
-        self._add_error("已请求强制终止：正在杀掉当前任务相关子进程……")
+        self._add_error("Force-kill requested: killing task child processes...")
 
         from app.core.process_control import get_process_registry
 
         killed = get_process_registry().kill_all()
         if killed:
-            self._add_system("已终止子进程：\n" + "\n".join(f"- {x}" for x in killed))
+            self._add_system("Killed child processes:\n" + "\n".join(f"- {x}" for x in killed))
         else:
-            self._add_system("没有发现已登记的运行中子进程。")
+            self._add_system("No registered running child processes found.")
 
         # Cancel Textual worker
         try:
@@ -1298,19 +1298,19 @@ class PaperAgentApp(App):
         self.agent_running = False
         self.session.status = "killed"
         self._run_started_at = None
-        self._current_stage_message = "已强制终止"
+        self._current_stage_message = "Force-killed"
 
         if self._current_stage:
             card = self._get_active_tool_card(self._current_stage)
             if card is not None:
-                card.append_log("任务已被强制终止。")
-                card.update(status="failed", message="已强制终止")
+                card.append_log("The task was force-killed.")
+                card.update(status="failed", message="Force-killed")
 
         if self._current_stage and self._pipeline_panel:
             self._pipeline_panel.update_from_name(
                 name=self._current_stage,
                 status="failed",
-                message="已强制终止",
+                message="Force-killed",
                 detail="force killed",
             )
 
@@ -1341,7 +1341,7 @@ class PaperAgentApp(App):
             self._current_stage or "", self._current_stage or "Pipeline"
         )
 
-        text = f"仍在运行：{stage_label} 已持续 {elapsed:.0f}s，可能正在等待网络、克隆仓库、解析依赖或模型响应。"
+        text = f"Still running: {stage_label} elapsed {elapsed:.0f}s — may be waiting on network, repository clone, dependency resolution or model response."
 
         card = (
             self._get_active_tool_card(self._current_stage or "")
@@ -1351,9 +1351,9 @@ class PaperAgentApp(App):
         if card is not None:
             # Replace previous heartbeat in this card instead of stacking
             clean = clean_display_text(text)
-            if clean.startswith("仍在运行："):
+            if clean.startswith("Still running: "):
                 for i in range(len(card._log_lines) - 1, -1, -1):
-                    if card._log_lines[i].startswith("仍在运行："):
+                    if card._log_lines[i].startswith("Still running: "):
                         card._log_lines[i] = clean
                         card._refresh_display()
                         break
@@ -1380,19 +1380,19 @@ class PaperAgentApp(App):
         try:
             resolution = self.resolver.resolve(text)
         except Exception as e:
-            self._add_error(f"无法解析输入：{e}")
+            self._add_error(f"Cannot parse input: {e}")
             return
 
         if not resolution.success:
-            self._add_error(resolution.failure_reason or "输入无效")
+            self._add_error(resolution.failure_reason or "invalid input")
             return
 
         self.session.paper_path = resolution.input_value or self.session.paper_path
         self._sync_session_panel()
 
-        info_lines = [f"已解析论文路径：`{resolution.input_value}`"]
+        info_lines = [f"Resolved paper path: `{resolution.input_value}`"]
         if resolution.title:
-            info_lines.append(f"标题：{resolution.title}")
+            info_lines.append(f"Title: {resolution.title}")
         self._add_assistant("\n".join(info_lines))
 
         # Auto-run in ACT mode
@@ -1404,16 +1404,16 @@ class PaperAgentApp(App):
     def _run_shell(self, cmd: str) -> None:
         cmd = cmd.strip()
         if not cmd:
-            self._add_error("!shell 需要命令参数。例如：`!ls -la`")
+            self._add_error("!shell needs a command argument, e.g. `!ls -la`")
             return
         self._pending_shell = cmd
         self._add_assistant(
-            f"即将执行 shell 命令：\n```\n{cmd}\n```\n输入 `yes` 确认，或输入其他内容取消。"
+            f"About to run the shell command:\n```\n{cmd}\n```\nEnter `yes` to confirm, or anything else to cancel. "
         )
 
     def _confirm_shell(self, line: str) -> None:
         if line.strip().lower() not in ("yes", "y"):
-            self._add_assistant("已取消。")
+            self._add_assistant("Cancelled.")
             self._pending_shell = None
             return
         cmd = self._pending_shell
@@ -1429,11 +1429,11 @@ class PaperAgentApp(App):
                 output += f"\n\nstderr:\n{result.stderr[:1000]}"
             self._add_tool_message(f"$ {cmd}\n\n{output}", "Shell")
         except subprocess.TimeoutExpired:
-            self._add_error("命令超时（30秒）。")
+            self._add_error("Command timed out (30s).")
         except Exception as e:
-            self._add_error(f"命令执行失败：{e}")
+            self._add_error(f"Command execution failed: {e}")
 
-    def _add_tool_message(self, text: str, label: str = "工具") -> None:
+    def _add_tool_message(self, text: str, label: str = "tool") -> None:
         if self._timeline:
             self._timeline.add_tool(text, label=label)
 
@@ -1442,7 +1442,7 @@ class PaperAgentApp(App):
     def _cmd_logs(self, args: str) -> None:
         log_type = args.strip().lower()
         if not self.session.task_dir:
-            self._add_assistant("尚未运行任务。先 `/run` 开始。")
+            self._add_assistant("No task has run yet. Start with `/run`.")
             return
 
         td = Path(self.session.task_dir)
@@ -1473,41 +1473,41 @@ class PaperAgentApp(App):
         if log_type not in log_map:
             opts = ", ".join(sorted(log_map.keys()))
             self._add_assistant(
-                f"未知日志类型 `{log_type}`。可用：{opts}\n" f"用法：`/logs smoke`"
+                f"Unknown log type `{log_type}`. Available: {opts}\n" f"Usage: `/logs smoke`"
             )
             return
 
         path = log_map[log_type]
         if not path.exists():
-            self._add_assistant(f"日志文件不存在：`{path}`")
+            self._add_assistant(f"Log file not found: `{path}`")
             return
 
         content = path.read_text(encoding="utf-8", errors="ignore")
         if len(content) > 5000:
-            content = content[-5000:] + "\n\n... [dim](最后 5000 字符)[/]"
+            content = content[-5000:] + "\n\n... [dim](last 5000 chars)[/]"
         self._add_tool_message(
-            f"**{log_type} log** (`{path}`)\n\n```\n{content}\n```", "日志"
+            f"**{log_type} log** (`{path}`)\n\n```\n{content}\n```", "log"
         )
 
     # ── Report ───────────────────────────────────────────────
 
     def _cmd_report(self, _: str) -> None:
         if not self.session.task_dir:
-            self._add_assistant("尚未运行任务。先 `/run` 开始。")
+            self._add_assistant("No task has run yet. Start with `/run`.")
             return
         rp = Path(self.session.task_dir) / "report" / "reproduction_smoke_report.md"
         if not rp.exists():
-            self._add_assistant(f"报告尚未生成。预期路径：`{rp}`")
+            self._add_assistant(f"Report not generated yet. Expected path: `{rp}`")
             return
         content = rp.read_text(encoding="utf-8", errors="ignore")
-        self._add_report_msg(f"报告：`{rp}`\n\n{content[:3000]}")
+        self._add_report_msg(f"report: `{rp}`\n\n{content[:3000]}")
 
     # ── Sessions ─────────────────────────────────────────────
 
     def _cmd_sessions(self, _: str) -> None:
         sessions = self.store.list_sessions()
         if not sessions:
-            self._add_assistant("没有已保存的会话。")
+            self._add_assistant("No saved sessions.")
             return
 
         lines = [
@@ -1530,13 +1530,13 @@ class PaperAgentApp(App):
     def _cmd_resume(self, args: str) -> None:
         sid = args.strip()
         if not sid:
-            self._add_error("用法：`/resume <session-id>`")
+            self._add_error("Usage: `/resume <session-id>`")
             return
         try:
             other_store = SessionStore(sid)
             data = other_store.load_snapshot()
             if data is None:
-                self._add_error(f"会话 `{sid}` 未找到。")
+                self._add_error(f"Sessions `{sid}` not found.")
                 return
             self.session = Session(
                 id=data.get("id", sid),
@@ -1555,9 +1555,9 @@ class PaperAgentApp(App):
             self.store = other_store
             self._sync_session_panel()
             self._update_status()
-            self._add_assistant(f"已恢复会话 `{sid}`（状态：{self.session.status}）")
+            self._add_assistant(f"Resumed session `{sid}` (status: {self.session.status})")
         except Exception as e:
-            self._add_error(f"恢复失败：{e}")
+            self._add_error(f"Resume failed: {e}")
 
     # ── Conda env management ─────────────────────────────────
 
@@ -1573,19 +1573,19 @@ class PaperAgentApp(App):
             return
         if action == "prune":
             self._add_assistant(
-                "`/conda-envs prune` 暂未实现。\n\n"
-                "可用命令：\n"
-                "- `/conda-envs` 查看环境\n"
-                "- `/conda-envs delete <编号>` 删除指定环境\n"
-                "- `/conda-envs delete --all` 删除全部项目环境"
+                "`/conda-envs prune` is not implemented yet.\n\n"
+                "Available commands:\n"
+                "- `/conda-envs` ViewEnvironment\n"
+                "- `/conda-envs delete <n>` delete an environment\n"
+                "- `/conda-envs delete --all` delete all project environments"
             )
             return
 
         self._add_error(
-            "用法：\n"
-            "`/conda-envs` 或 `/envs` —— 列出项目 conda 环境\n"
-            "`/conda-envs delete <编号|slug>` —— 删除指定环境\n"
-            "`/conda-envs delete --all` —— 删除全部项目环境"
+            "Usage: \n"
+            "`/conda-envs` or `/envs` — list project conda environments\n"
+            "`/conda-envs delete <n|slug>` — delete an environment\n"
+            "`/conda-envs delete --all` — delete all project environments"
         )
 
     def _cmd_conda_envs_list(self) -> None:
@@ -1597,15 +1597,15 @@ class PaperAgentApp(App):
         envs = discover_project_conda_envs(self.session.workspace)
         if not envs:
             self._add_assistant(
-                "当前 workspace 下未发现本项目创建的 conda 环境。\n\n"
-                f"检查目录：`{Path(self.session.workspace).resolve() / 'envs'}`"
+                "No project-created conda environments found under the workspace.\n\n"
+                f"Checking directory: `{Path(self.session.workspace).resolve() / 'envs'}`"
             )
             return
         self._add_assistant(
-            "## 项目 conda 环境\n\n"
-            f"Workspace：`{self.session.workspace}`\n\n"
+            "## Project conda environments\n\n"
+            f"Workspace: `{self.session.workspace}`\n\n"
             + format_env_table(envs)
-            + "\n\n删除示例：\n"
+            + "\n\nDeletion examples:\n"
             "- `/conda-envs delete 1`\n"
             "- `/conda-envs delete <slug>`\n"
             "- `/conda-envs delete --all`"
@@ -1614,12 +1614,12 @@ class PaperAgentApp(App):
     def _cmd_conda_envs_delete(self, selector: str) -> None:
         if self.agent_running:
             self._add_error(
-                "Agent 正在运行，暂不允许删除 conda 环境。请先 `/cancel` 或等待任务完成。"
+                "Agent is running; conda environment deletion is not allowed right now. `/cancel` or wait for completion first."
             )
             return
         if not selector:
             self._add_error(
-                "用法：`/conda-envs delete <编号|slug|路径>` 或 `/conda-envs delete --all`"
+                "Usage: `/conda-envs delete <n|slug|path>` or `/conda-envs delete --all`"
             )
             return
 
@@ -1632,37 +1632,37 @@ class PaperAgentApp(App):
 
         if selector == "--all":
             if not envs:
-                self._add_assistant("没有可删除的项目 conda 环境。")
+                self._add_assistant("No project conda environments to delete.")
                 return
             self._pending_env_delete = {"mode": "all", "envs": envs}
             self._add_error(
-                f"确认删除当前 workspace 下的 **{len(envs)} 个**项目 conda 环境？\n"
-                "这会删除 `<workspace>/envs/*` 下由本项目创建的环境。\n"
-                "请输入 `yes` 确认，或输入其他内容取消。"
+                f"Confirm deletion of **{len(envs)}** project conda environment(s)?\n"
+                "This deletes environments created by this project under `<workspace>/envs/*`.\n"
+                "Enter `yes` to confirm, or anything else to cancel."
             )
             return
 
         env = find_env_by_selector(selector, envs)
         if env is None:
             self._add_error(
-                f"未找到环境：`{selector}`。请先输入 `/conda-envs` 查看可删除环境列表。"
+                f"Environment not found: `{selector}`. Run `/conda-envs` first to list deletable environments."
             )
             return
 
         self._pending_env_delete = {"mode": "one", "env": env}
         self._add_error(
-            "确认删除这个项目 conda 环境？\n\n"
-            f"- Slug：`{env.slug}`\n"
-            f"- 路径：`{env.path}`\n\n"
-            "请输入 `yes` 确认，或输入其他内容取消。"
+            "Confirm deletion of this project conda environment?\n\n"
+            f"- Slug: `{env.slug}`\n"
+            f"- Path: `{env.path}`\n\n"
+            "Enter `yes` to confirm, or anything else to cancel."
         )
 
     def _confirm_env_delete(self, line: str) -> None:
         pending = self._pending_env_delete
         self._pending_env_delete = None
 
-        if line.strip().lower() not in ("yes", "y", "确认"):
-            self._add_assistant("已取消删除。")
+        if line.strip().lower() not in ("yes", "y"):
+            self._add_assistant("Deletion cancelled.")
             return
 
         from app.tools.conda_env_manager import remove_conda_env
@@ -1671,7 +1671,7 @@ class PaperAgentApp(App):
             env = pending["env"]
             ok, msg = remove_conda_env(env, workspace=self.session.workspace)
             if ok:
-                self._add_assistant(f"删除成功：`{env.slug}` —— {msg}")
+                self._add_assistant(f"Deleted: `{env.slug}` — {msg}")
             else:
                 self._add_error(msg)
             return
@@ -1681,7 +1681,7 @@ class PaperAgentApp(App):
             for env in pending["envs"]:
                 ok, msg = remove_conda_env(env, workspace=self.session.workspace)
                 results.append((env.slug, ok, msg))
-            lines = ["## conda 环境删除结果", ""]
+            lines = ["## Conda environment deletion results", ""]
             for slug, ok, msg in results:
                 mark = "✅" if ok else "❌"
                 lines.append(f"- {mark} `{slug}` — {msg}")

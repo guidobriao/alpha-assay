@@ -93,7 +93,12 @@ def _run_pipeline(
     from app.agents.smoke_run_agent import SmokeRunAgent
     from app.agents.benchmark_reproduction_agent import BenchmarkReproductionAgent
     from app.agents.simple_reproduction_agent import SimpleReproductionAgent
+    from app.agents.data_access_agent import DataAccessAgent
+    from app.agents.leakage_detector import LeakageDetectorAgent
+    from app.agents.oos_agent import OOSAgent
+    from app.agents.robustness_agent import RobustnessAgent
     from app.agents.report_writer_agent import ReportWriterAgent
+    from app.agents.replication_paper_agent import ReplicationPaperAgent
 
     agents = [
         ("Ingest paper", PaperIngestAgent()),
@@ -112,6 +117,12 @@ def _run_pipeline(
             ("Run smoke command", SmokeRunAgent(timeout_minutes=timeout_minutes, max_repair_attempts=max_repair_attempts)),
             ("Run benchmark reproduction", BenchmarkReproductionAgent(timeout_minutes=timeout_minutes)),
             ("Run simple reproduction", SimpleReproductionAgent(timeout_minutes=timeout_minutes)),
+            # Finance-specific stages (no-ops for non-finance papers: every
+            # agent degrades gracefully when finance_brief.json is absent)
+            ("Data access", DataAccessAgent()),
+            ("Leakage audit", LeakageDetectorAgent()),
+            ("OOS extension", OOSAgent()),
+            ("Robustness matrix", RobustnessAgent()),
         ])
     elif backend == "venv":
         agents.extend([
@@ -119,6 +130,12 @@ def _run_pipeline(
             ("Run smoke command", SmokeRunAgent(timeout_minutes=timeout_minutes, max_repair_attempts=max_repair_attempts)),
             ("Run benchmark reproduction", BenchmarkReproductionAgent(timeout_minutes=timeout_minutes)),
             ("Run simple reproduction", SimpleReproductionAgent(timeout_minutes=timeout_minutes)),
+            # Finance-specific stages (no-ops for non-finance papers: every
+            # agent degrades gracefully when finance_brief.json is absent)
+            ("Data access", DataAccessAgent()),
+            ("Leakage audit", LeakageDetectorAgent()),
+            ("OOS extension", OOSAgent()),
+            ("Robustness matrix", RobustnessAgent()),
         ])
     elif backend == "conda":
         agents.extend([
@@ -126,6 +143,12 @@ def _run_pipeline(
             ("Run smoke command", SmokeRunAgent(timeout_minutes=timeout_minutes, max_repair_attempts=max_repair_attempts)),
             ("Run benchmark reproduction", BenchmarkReproductionAgent(timeout_minutes=timeout_minutes)),
             ("Run simple reproduction", SimpleReproductionAgent(timeout_minutes=timeout_minutes)),
+            # Finance-specific stages (no-ops for non-finance papers: every
+            # agent degrades gracefully when finance_brief.json is absent)
+            ("Data access", DataAccessAgent()),
+            ("Leakage audit", LeakageDetectorAgent()),
+            ("OOS extension", OOSAgent()),
+            ("Robustness matrix", RobustnessAgent()),
         ])
     elif backend == "local":
         state.env_build = EnvironmentBuildResult(
@@ -137,6 +160,12 @@ def _run_pipeline(
             ("Run smoke command", SmokeRunAgent(timeout_minutes=timeout_minutes, max_repair_attempts=max_repair_attempts)),
             ("Run benchmark reproduction", BenchmarkReproductionAgent(timeout_minutes=timeout_minutes)),
             ("Run simple reproduction", SimpleReproductionAgent(timeout_minutes=timeout_minutes)),
+            # Finance-specific stages (no-ops for non-finance papers: every
+            # agent degrades gracefully when finance_brief.json is absent)
+            ("Data access", DataAccessAgent()),
+            ("Leakage audit", LeakageDetectorAgent()),
+            ("OOS extension", OOSAgent()),
+            ("Robustness matrix", RobustnessAgent()),
         ])
     else:  # none
         state.env_build = EnvironmentBuildResult(
@@ -146,6 +175,7 @@ def _run_pipeline(
         save_state(state)
 
     agents.append(("Write report", ReportWriterAgent()))
+    agents.append(("Replication paper", ReplicationPaperAgent()))
 
     # Enable LLM telemetry collection
     from app.tools.llm import enable_telemetry, disable_telemetry
@@ -230,6 +260,16 @@ def _step_succeeded(desc: str, state: TaskState) -> bool:
             state.reproduction_run
             and (state.reproduction_run.success or state.reproduction_run.skipped)
         )
+    if desc == "Data access":
+        return state.data_access is not None
+    if desc == "Leakage audit":
+        return Path(state.task_dir, "leakage", "leakage_report.json").exists()
+    if desc == "OOS extension":
+        return Path(state.task_dir, "oos", "oos_report.json").exists()
+    if desc == "Robustness matrix":
+        return Path(state.task_dir, "robustness", "robustness_matrix.json").exists()
+    if desc == "Replication paper":
+        return Path(state.task_dir, "paper_out", "paper_meta.json").exists()
     if desc == "Run benchmark reproduction":
         return bool(
             state.benchmark_run
@@ -562,7 +602,7 @@ def tui(
         raise typer.Exit(1)
 
     import os
-    skip = no_splash or bool(os.environ.get("PRA_SKIP_SPLASH"))
+    skip = no_splash or bool(os.environ.get("ALPHA_ASSAY_SKIP_SPLASH"))
 
     from app.tui import run_tui
     from app.core.paths import resolve_workspace_path

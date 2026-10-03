@@ -98,7 +98,7 @@ Count the comparison rows:
 
 ### 5. Write the Final Report
 
-Write `paper_reproduction_output/reproduction_report.md`:
+Write `replication_output/reproduction_report.md`:
 
 ```markdown
 # Reproduction Report
@@ -155,8 +155,8 @@ running, the script doesn't auto-download and fails silently")
 
 ## Files Produced
 - Full comparison table: (path)
-- Raw experiment outputs: paper_reproduction_output/run_outputs/outputs/
-- Environment details: paper_reproduction_output/env_setup/
+- Raw experiment outputs: replication_output/run_outputs/outputs/
+- Environment details: replication_output/env_setup/
 
 ## Reproduction Checklist
 - [ ] Code repository found and cloned

@@ -40,7 +40,7 @@ Write one yourself. A good smoke test does the minimum possible thing:
 - For a training script: run 1 epoch on 10 samples with minimal config
 
 The self-written smoke test goes in:
-`paper_reproduction_output/run_outputs/smoke_test.py`
+`replication_output/run_outputs/smoke_test.py`
 
 ### 3. Run the Smoke Test
 
@@ -75,7 +75,7 @@ test is a gate, not a debugging session.
 
 ### 5. Output Format
 
-Write `paper_reproduction_output/run_outputs/smoke_test_report.md`:
+Write `replication_output/run_outputs/smoke_test_report.md`:
 
 ```markdown
 # Smoke Test Report

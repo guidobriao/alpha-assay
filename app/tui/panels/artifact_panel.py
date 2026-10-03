@@ -35,14 +35,14 @@ class ArtifactPanel(Widget):
     """
 
     _ARTIFACT_KEYS = [
-        ("task_dir", "任务目录"),
-        ("report_md", "报告 Markdown"),
-        ("report_json", "报告 JSON"),
-        ("state_json", "状态 JSON"),
-        ("env_log", "环境构建日志"),
-        ("smoke_log", "冒烟测试输出"),
-        ("benchmark_log", "Benchmark 输出"),
-        ("reproduction_log", "轻量复现输出"),
+        ("task_dir", "Task directory"),
+        ("report_md", "Report Markdown"),
+        ("report_json", "Report JSON"),
+        ("state_json", "State JSON"),
+        ("env_log", "Env build log"),
+        ("smoke_log", "Smoke output"),
+        ("benchmark_log", "Benchmark output"),
+        ("reproduction_log", "Reproduction output"),
     ]
 
     def __init__(self, **kwargs: object) -> None:
@@ -77,7 +77,7 @@ class ArtifactPanel(Widget):
 
     def _refresh(self) -> None:
         if not self._paths:
-            content = f"[{T.FG_DIM}]暂无任务产物。请先运行流水线。[/]"
+            content = f"[{T.FG_DIM}]No task artifacts yet. Run the pipeline first.[/]"
         else:
             lines: list[str] = []
             for key, label in self._ARTIFACT_KEYS:
@@ -98,7 +98,7 @@ class ArtifactPanel(Widget):
 
     def compose(self) -> ComposeResult:
         with VerticalScroll():
-            yield Static("[bold]任务产物[/]", id="artifact-title")
+            yield Static("[bold]Task artifacts[/]", id="artifact-title")
             yield Static("", id="artifact-body")
 
     def on_mount(self) -> None:
@@ -108,4 +108,4 @@ class ArtifactPanel(Widget):
 def _trunc(text: str, max_len: int) -> str:
     if len(text) <= max_len:
         return text
-    return text[: max_len // 2 - 1] + "…" + text[-(max_len // 2 - 1) :]
+    return text[: max_len // 2 - 1] + "..." + text[-(max_len // 2 - 1) :]

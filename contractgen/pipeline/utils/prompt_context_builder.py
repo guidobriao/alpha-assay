@@ -56,18 +56,18 @@ _POSITIVE_ACTION_TOKENS = (
     "save",
     "bind",
     "route",
-    "实现",
-    "暴露",
-    "创建",
-    "写出",
-    "支持",
-    "保存",
-    "连接",
-    "计算",
-    "命名",
-    "调度",
-    "适配",
-    "维护",
+    "implementation",
+    "expose",
+    "create",
+    "write",
+    "support",
+    "save",
+    "connect",
+    "compute",
+    "name",
+    "schedule",
+    "adapt",
+    "maintain",
 )
 
 _PROMPT_INVENTORY_PREFIXES = (
@@ -129,7 +129,7 @@ def _prompt_positive_fragments(value: Any) -> list[str]:
         return []
     fragments = [
         _prompt_safe_text(fragment)
-        for fragment in re.split(r"[\n;；。]+", text)
+        for fragment in re.split(r"[\n;; . ]+", text)
         if _prompt_safe_text(fragment)
     ]
     selected: list[str] = []
@@ -287,11 +287,11 @@ def _target_brief_for_planning(state: PaperBenchReproState) -> str:
             text = str(note or "")
             lowered = text.lower()
             if lowered.startswith(("method_inventory:", "baseline_inventory:")):
-                method_terms.extend(part.strip(" .。") for part in re.split(r"[,;，；]", text.split(":", 1)[-1]) if part.strip())
+                method_terms.extend(part.strip(" .. ") for part in re.split(r"[,;, ; ]", text.split(":", 1)[-1]) if part.strip())
             elif lowered.startswith(("dataset_inventory:", "environment_inventory:")):
-                dataset_terms.extend(part.strip(" .。") for part in re.split(r"[,;，；]", text.split(":", 1)[-1]) if part.strip())
+                dataset_terms.extend(part.strip(" .. ") for part in re.split(r"[,;, ; ]", text.split(":", 1)[-1]) if part.strip())
             elif lowered.startswith(("measurement_inventory:", "metric_inventory:")):
-                metric_terms.extend(part.strip(" .。") for part in re.split(r"[,;，；]", text.split(":", 1)[-1]) if part.strip())
+                metric_terms.extend(part.strip(" .. ") for part in re.split(r"[,;, ; ]", text.split(":", 1)[-1]) if part.strip())
     if dataset_terms:
         clauses.append("Active datasets/tasks: " + ", ".join(_dedupe_nonempty(dataset_terms)[:10]) + ".")
     if method_terms:
@@ -808,16 +808,16 @@ _FORMULA_ALGORITHM_SECTION_TERMS = (
     "metric",
     "evaluation",
     "implementation",
-    "方法",
-    "算法",
-    "模型",
-    "剪枝",
-    "调参",
-    "训练",
-    "优化",
-    "目标",
-    "损失",
-    "指标",
+    "method",
+    "algorithm",
+    "model",
+    "pruning",
+    "hyperparameter tuning",
+    "training",
+    "optimization",
+    "objective",
+    "loss",
+    "metric",
 )
 
 _FORMULA_ALGORITHM_TEXT_TERMS = (
@@ -844,15 +844,15 @@ _FORMULA_ALGORITHM_TEXT_TERMS = (
     "accuracy",
     "throughput",
     "memory",
-    "公式",
-    "算法",
-    "梯度",
-    "显著性",
-    "掩码",
-    "秩",
-    "二分",
-    "调度",
-    "蒸馏",
+    "formula",
+    "algorithm",
+    "gradient",
+    "significance",
+    "mask",
+    "rank",
+    "bisection",
+    "schedule",
+    "distillation",
 )
 
 _FORMULA_ALGORITHM_STRONG_TERMS = (
@@ -874,13 +874,13 @@ _FORMULA_ALGORITHM_STRONG_TERMS = (
     "teacher",
     "student",
     "distill",
-    "公式",
-    "算法",
-    "梯度",
-    "显著性",
-    "掩码",
-    "二分",
-    "蒸馏",
+    "formula",
+    "algorithm",
+    "gradient",
+    "significance",
+    "mask",
+    "bisection",
+    "distillation",
 )
 
 _FORMULA_ALGORITHM_PROCEDURE_TERMS = (
@@ -902,15 +902,15 @@ _FORMULA_ALGORITHM_PROCEDURE_TERMS = (
     "linearly",
     "re-compute",
     "recompute",
-    "计算",
-    "更新",
-    "搜索",
-    "排序",
-    "采样",
-    "合并",
-    "剪枝",
-    "掩码",
-    "调度",
+    "compute",
+    "update",
+    "search",
+    "sorting",
+    "sampling",
+    "merge",
+    "pruning",
+    "mask",
+    "schedule",
 )
 
 _FORMULA_ALGORITHM_PRIORITY_SECTION_TERMS = (
@@ -930,14 +930,14 @@ _FORMULA_ALGORITHM_PRIORITY_SECTION_TERMS = (
     "pruning",
     "tuning",
     "distillation",
-    "方法",
-    "算法",
-    "模型",
-    "架构",
-    "公式",
-    "优化",
-    "训练",
-    "实现",
+    "method",
+    "algorithm",
+    "model",
+    "architecture",
+    "formula",
+    "optimization",
+    "training",
+    "implementation",
 )
 
 _FORMULA_ALGORITHM_NUMERIC_SECTION_TERMS = (
@@ -953,13 +953,13 @@ _FORMULA_ALGORITHM_NUMERIC_SECTION_TERMS = (
     "setup",
     "hyperparameter",
     "appendix",
-    "公式",
-    "算法",
-    "剪枝",
-    "调参",
-    "蒸馏",
-    "实现",
-    "超参数",
+    "formula",
+    "algorithm",
+    "pruning",
+    "hyperparameter tuning",
+    "distillation",
+    "implementation",
+    "hyperparameters",
 )
 
 _FORMULA_ALGORITHM_LOW_PRIORITY_SECTION_TERMS = (
@@ -975,10 +975,10 @@ _FORMULA_ALGORITHM_LOW_PRIORITY_SECTION_TERMS = (
     "discussion",
     "conclusion",
     "appendix",
-    "实验",
-    "结果",
-    "分析",
-    "结论",
+    "experiment",
+    "result",
+    "analysis",
+    "conclusion",
 )
 
 _FORMULA_ALGORITHM_EXCLUDED_SECTION_TERMS = (
@@ -1105,7 +1105,7 @@ def _section_allows_formula_algorithm_contract(source_id: str, section_title: st
 
 
 def _normalize_formula_symbol(raw: str) -> str:
-    text = str(raw or "").strip().strip("$`.,;:，。")
+    text = str(raw or "").strip().strip("$`.,;:, . ")
     if not text:
         return ""
     text = re.sub(r"\\(?:left|right)\b", "", text)
@@ -1251,7 +1251,7 @@ def _paper_formula_algorithm_contract(state: PaperBenchReproState) -> dict[str, 
             return []
         parts = [
             item.strip()
-            for item in re.split(r"(?<=[.!?。；;])\s+|\n+", normalized)
+            for item in re.split(r"(?<=[.!?. ; ;])\s+|\n+", normalized)
             if item.strip()
         ]
         selected: list[str] = []
@@ -1300,14 +1300,14 @@ def _paper_formula_algorithm_contract(state: PaperBenchReproState) -> dict[str, 
                         "schedule",
                         "loss",
                         "gradient",
-                        "计算",
-                        "更新",
-                        "搜索",
-                        "排序",
-                        "采样",
-                        "合并",
-                        "剪枝",
-                        "掩码",
+                        "compute",
+                        "update",
+                        "search",
+                        "sorting",
+                        "sampling",
+                        "merge",
+                        "pruning",
+                        "mask",
                     )
                 )
             ]

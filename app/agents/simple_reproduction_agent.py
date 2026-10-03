@@ -174,7 +174,7 @@ class SimpleReproductionAgent:
             return "repo was not evaluated"
         risk_flags = set(state.repo_evaluation.risk_flags)
         if (
-            "可能需要大数据集" in risk_flags
+            "may require large datasets" in risk_flags
             and not self._has_lightweight_surface(state)
         ):
             return "repository appears to require a large dataset"

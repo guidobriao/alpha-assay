@@ -21,12 +21,12 @@ class RuntimeDecisionAgent:
 
         repo_dir = Path(state.repo_evaluation.repo_dir)
         emit_progress("Decide runtime", "analysing CUDA requirements from paper and repo",
-                       detail="检查论文和仓库的 CUDA 依赖声明")
+                       detail="checking CUDA dependency declarations in paper and repository")
 
         # Determine CUDA requirement
         cuda_req, evidence = _infer_cuda_requirement(state, repo_dir)
         emit_progress("Decide runtime", f"CUDA requirement: {cuda_req}",
-                       detail=", ".join(evidence) if evidence else "未发现明确 CUDA 依赖声明的证据")
+                       detail=", ".join(evidence) if evidence else "no explicit CUDA dependency declaration found")
 
         # Select device
         device, reason = _select_device(cuda_req, repo_dir)
@@ -49,9 +49,9 @@ class RuntimeDecisionAgent:
         if device == "cuda" and not host_cuda.has_gpu:
             skip = True
             compatible = False
-            reason += "；但本机未检测到 CUDA 环境，将跳过代码执行阶段"
+            reason += "; but no CUDA environment detected on this machine, skipping code execution"
             emit_progress("Decide runtime", "CUDA required but not available on host",
-                          level="warning", detail="跳过代码执行")
+                          level="warning", detail="skipping code execution")
 
         if device == "cuda" and host_cuda.has_gpu:
             cuda_wheel = _cuda_wheel_tag(host_cuda.cuda_version)
@@ -60,7 +60,7 @@ class RuntimeDecisionAgent:
             else:
                 compatible = False
                 skip = True
-                reason += "；无法确定 CUDA wheel tag，将跳过"
+                reason += "; cannot determine CUDA wheel tag, skipping"
 
         decision = RuntimeDecision(
             cuda_requirement=cuda_req,
@@ -101,7 +101,7 @@ def _infer_cuda_requirement(state: TaskState, repo_dir: Path) -> tuple[CudaRequi
         m in paper_title for m in _LIGHTGLUE_MARKERS
     )
     if is_lightglue:
-        evidence.append("LightGlue 仓库/论文，benchmark 支持 CPU/CUDA，默认选择 CPU")
+        evidence.append("LightGlue repository/paper: benchmark supports CPU/CUDA, defaulting to CPU")
         return "optional", evidence
 
     # Check README
@@ -126,7 +126,7 @@ def _infer_cuda_requirement(state: TaskState, repo_dir: Path) -> tuple[CudaRequi
     ]
     for marker in required_markers:
         if marker in combined:
-            evidence.append(f"发现强制 CUDA 声明：{marker}")
+            evidence.append(f"Found mandatory CUDA declaration: {marker}")
             return "required", evidence
 
     optional_markers = [
@@ -139,9 +139,9 @@ def _infer_cuda_requirement(state: TaskState, repo_dir: Path) -> tuple[CudaRequi
 
     if any(m in combined for m in optional_markers):
         if any(m in combined for m in cpu_markers):
-            evidence.append("仓库/README 同时支持 CPU 和 CUDA")
+            evidence.append("Repository/README supports both CPU and CUDA")
         else:
-            evidence.append("仓库/README 提到 CUDA 选项，未强制要求")
+            evidence.append("Repository/README mentions a CUDA option, not mandatory")
         return "optional", evidence
 
     # Check environment.yml / requirements for cudatoolkit
@@ -152,22 +152,22 @@ def _infer_cuda_requirement(state: TaskState, repo_dir: Path) -> tuple[CudaRequi
         except Exception:
             continue
         if "cudatoolkit" in text or "cupy-cuda" in text:
-            evidence.append(f"依赖文件中发现 CUDA 相关包：{rf.name}")
+            evidence.append(f"CUDA-related package found in dependency file: {rf.name}")
             return "required", evidence
 
     # Default: not needed / unknown
     if not evidence:
-        evidence.append("未发现明确 CUDA 依赖声明，默认选择 CPU")
+        evidence.append("No explicit CUDA dependency declaration, defaulting to CPU")
     return "not_needed", evidence
 
 
 def _select_device(cuda_req: str, repo_dir: Path) -> tuple[RuntimeDevice, str]:
     """Select CPU/CUDA/skip based on CUDA requirement."""
     if cuda_req == "required":
-        return "cuda", "论文/仓库明确要求 CUDA，尝试 CUDA 执行"
+        return "cuda", "Paper/repository explicitly requires CUDA, trying CUDA execution"
     if cuda_req == "optional":
-        return "cpu", "论文/仓库支持 CUDA 但未强制要求，自动复现默认使用 CPU"
-    return "cpu", "未发现 CUDA 依赖，默认使用 CPU"
+        return "cpu", "Paper/repository supports CUDA but does not require it; automatic reproduction defaults to CPU"
+    return "cpu", "No CUDA dependency found, defaulting to CPU"
 
 
 def _cuda_wheel_tag(cuda_version: str | None) -> str | None:

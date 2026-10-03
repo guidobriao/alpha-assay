@@ -1,13 +1,13 @@
 ---
-name: paper-reproduction
+name: replication
 version: v1.0.0
 status: stable
 tested_on: scVelo(2020), ScType(2022), Annotatability(2024), Robust-Stitching(2023)
 description: >
   Use whenever the user wants to reproduce, replicate, or verify results from
   an academic paper — especially ML/CV/NLP papers with public GitHub repos and
-  Python codebases. Triggers on: 复现, reproduce, replicate, 复现论文, 跑论文代码,
-  verify results, paper reproduction, 验证实验结果, 论文复现, check if a paper's
+  Python codebases. Triggers on: reproduce, replicate, replicate papers, run paper code,
+  verify results, paper reproduction, verify results, paper replication, check if a paper's
   results are real, run this paper's code, reproduce table X from paper Y.
   Handles the full pipeline: read paper → find code & data → build environment →
   smoke test → full run → compare results against paper claims. Even if the user
@@ -45,7 +45,7 @@ Detection is two-phase:
 ### Minimal Path (R / MATLAB / Julia)
 
 When a non-Python language is detected, do NOT block. Instead, write
-`paper_reproduction_output/<paper_slug>/reduced_scope.md`:
+`replication_output/<paper_slug>/reduced_scope.md`:
 
 ```markdown
 # Reduced Scope — Non-Python Repository
@@ -136,13 +136,13 @@ six into context at once.
    papers never overwrites each other's artifacts.
 4. Create the output directory tree **in the working directory** (not inside the
    skill directory). The skill itself (SKILL.md + references/) should remain
-   clean — `paper_reproduction_output/` is a runtime artifact that lives
+   clean — `replication_output/` is a runtime artifact that lives
    alongside the skill, not inside it.
 
 ```
 <working_directory>/
 ├── orchestrator/          ← skill body (SKILL.md + references/)
-└── paper_reproduction_output/   ← runtime outputs (created below)
+└── replication_output/   ← runtime outputs (created below)
     └── <paper_slug>/            ← ONE SUBDIRECTORY PER PAPER
         ├── paper_reading/
         ├── env_setup/
@@ -172,7 +172,7 @@ accumulate under one namespace.
    **If web tools are available** → proceed to Step 1.
 
    **If web tools are unavailable** → **degraded mode**. Write
-   `paper_reproduction_output/<paper_slug>/degraded_mode.md`:
+   `replication_output/<paper_slug>/degraded_mode.md`:
 
    ```markdown
    # Degraded Mode — Web Tools Unavailable
@@ -226,13 +226,13 @@ full conversation history.
 **Agent A context to pass:**
 - PDF path (if given) or paper title
 - Instructions from `references/agent-paper-reader.md`
-- Target output: `paper_reproduction_output/paper_reading/extracted_methodology.md`
+- Target output: `replication_output/paper_reading/extracted_methodology.md`
 
 **Agent B context to pass:**
 - Paper title and authors
 - Any GitHub URLs already visible in the paper metadata
 - Instructions from `references/agent-resource-finder.md`
-- Target output: `paper_reproduction_output/paper_reading/resource_map.md`
+- Target output: `replication_output/paper_reading/resource_map.md`
 
 These two agents are independent — Agent B does not need Agent A's output.
 
@@ -259,7 +259,7 @@ After both agents complete:
      in the paper's code availability statement → proceed normally.
    - **Mismatch or unverified**: The paper claims repo X but the resource map found
      repo Y, or the repo README cites a different paper. Write a one-line warning to
-     `paper_reproduction_output/paper_reference_mismatch.md` with the evidence (what
+     `replication_output/paper_reference_mismatch.md` with the evidence (what
      the paper claims vs what the repo claims). **Do not block reproduction** — the
      user may have intentionally paired a paper with an alternative implementation.
      Continue with the repo that was actually found and flag the mismatch for Agent F.
@@ -279,7 +279,7 @@ After both agents complete:
    | 5 | **Original authors** | Repo by paper authors preferred over third-party reimplementation — but only if criteria 1-4 are comparable. |
 
    Document the selection in a one-line file:
-   `paper_reproduction_output/repo_selection.md` with all candidates, scores
+   `replication_output/repo_selection.md` with all candidates, scores
    per criterion, and final choice with rationale. Flag any deselected repos
    for Agent F so it can note that results may differ between implementations.
 
@@ -322,7 +322,7 @@ Before launching Agent C, determine the reproduction mode by reading
 - Repo may have a `demo.py`, `tutorial.ipynb`, or API docs but no `main.py` with --config
 
 Record the decision in a one-line file:
-`paper_reproduction_output/reproduction_mode.txt` — content: `tool` or `experiment`.
+`replication_output/reproduction_mode.txt` — content: `tool` or `experiment`.
 
 Pass this mode to Agent C and Agent E so they adapt. Agent C needs it for install
 strategy (`pip install -e .` vs `pip install -r requirements.txt`). Agent E needs it
@@ -336,7 +336,7 @@ Before launching Agent C, check two blocking conditions:
 **Gate A: Agent A found no usable paper content.**
 If `extracted_methodology.md` contains `## PDF Status: NOT FOUND` or the claims
 section is empty with no fallback content → degraded path.
-- Write `paper_reproduction_output/<slug>/degraded_mode.md` documenting what was
+- Write `replication_output/<slug>/degraded_mode.md` documenting what was
   tried and why PDF acquisition failed.
 - Continue with whatever content IS available (PMC summary, web search, etc.).
   The `Key Claimed Results` section may be sparser than normal — Agent F will
@@ -346,7 +346,7 @@ section is empty with no fallback content → degraded path.
 **Gate B: Agent B found NO usable data sources.**
 If the resource map shows ALL datasets marked as `[UNREACHABLE]` or
 `[UNVERIFIED]` with zero working download URLs:
-- Write `paper_reproduction_output/<slug>/data_unavailable.md`:
+- Write `replication_output/<slug>/data_unavailable.md`:
   ```markdown
   # Data Unavailable
   ## Paper: {title}
@@ -369,7 +369,7 @@ Launch Agent C with:
 - `resource_map.md` content
 - `reproduction_mode.txt` content (so it knows install strategy)
 - Instructions from `references/agent-environment-builder.md`
-- Target output: `paper_reproduction_output/env_setup/setup_report.md`
+- Target output: `replication_output/env_setup/setup_report.md`
 
 **Retry policy:** Agent C now has a built-in structured dependency conflict
 resolution loop (see Agent C reference §4c). The agent diagnoses each import
@@ -395,7 +395,7 @@ Launch Agent D with:
 - `setup_report.md` content (to know the venv path and installed packages)
 - `resource_map.md` content (to know the repo structure)
 - Instructions from `references/agent-smoke-tester.md`
-- Target output: `paper_reproduction_output/run_outputs/smoke_test_report.md`
+- Target output: `replication_output/run_outputs/smoke_test_report.md`
 
 If smoke test fails → **reproduction failed path**. Write
 `reproduction_report.md` with "## Reproduction Status: FAILED — Smoke Test"
@@ -456,8 +456,8 @@ Launch Agent E with:
 - All prior outputs (methodology, resource map, setup report, smoke test report)
 - `reproduction_mode.txt` content — so it knows which strategy to use
 - Instructions from `references/agent-full-runner.md`
-- Target output: `paper_reproduction_output/run_outputs/full_run_report.md`
-  and actual output files in `paper_reproduction_output/run_outputs/outputs/`
+- Target output: `replication_output/run_outputs/full_run_report.md`
+  and actual output files in `replication_output/run_outputs/outputs/`
 
 Agent E should record wall-clock time for the full run. If the run takes
 longer than 1 hour, it should checkpoint intermediate results.
@@ -467,7 +467,7 @@ longer than 1 hour, it should checkpoint intermediate results.
 
 **In tool mode**, Agent E writes a reproduction script that imports the
 installed package and calls its API to reproduce each claimed result.
-The script goes in `paper_reproduction_output/run_outputs/reproduction_script.py`.
+The script goes in `replication_output/run_outputs/reproduction_script.py`.
 See Agent E's reference file for the full instructions for each mode.
 
 If full run fails partway → **reproduction failed path**. Document which step
@@ -482,7 +482,7 @@ Launch Agent F with:
   uses this to detect systematic patterns, undiagnosed failures, and broken fix
   strategies; see Agent F reference §6)
 - Instructions from `references/agent-result-comparator.md`
-- Target output: `paper_reproduction_output/reproduction_report.md`
+- Target output: `replication_output/reproduction_report.md`
 
 This is the final synthesis step. Agent F produces the definitive report.
 
@@ -508,7 +508,7 @@ Read the `<paper_slug>` output directory and produce:
 | reproduction_report.md | Agent F | X KB | Paper claims vs reproduced values |
 ```
 
-Write this to `paper_reproduction_output/<paper_slug>/reproduction_manifest.md`.
+Write this to `replication_output/<paper_slug>/reproduction_manifest.md`.
 This is the index the user opens first to navigate the results.
 
 ### Step 7 — Merge and Present
@@ -528,7 +528,7 @@ Then point the user to `reproduction_report.md` for the full report and
 
 Every agent MUST write structured JSONL entries to
 `.claude/tasklog/YYYYMMDD-<session-slug>.jsonl` for key actions. This turns
-"一段描述" into machine-analyzable, cross-paper reusable root cause records.
+"a one-line description" into machine-analyzable, cross-paper reusable root cause records.
 
 **Schema reference:** `.claude/tasklog/SCHEMA.md` (read only if you need
 the full field spec). Agents use a simplified subset below.
@@ -576,7 +576,7 @@ After each agent completes, the orchestrator reads the new entries in
 - Three or more entries with the same `root_cause` → pattern detected. Flag
   for the final `reproduction_report.md`.
 
-This replaces the previous "一段描述" failure feedback with structured data
+This replaces the previous "a one-line description" failure feedback with structured data
 that Agent F can use to write a more precise deviation analysis.
 
 ## Three Outcome Paths
@@ -627,3 +627,50 @@ handle them at the orchestrator level, but verify they were addressed:
 
 Read each reference file only when you are about to launch the corresponding
 agent. Pass the full content as part of the agent's task description.
+
+---
+
+## Extended Pipeline: Finance Replication, Verification and Out-of-Sample Extension (Phases 4-8)
+
+When the paper is identified as an empirical asset-pricing study
+(`paper/finance_brief.json` exists in the task directory), the pipeline
+extends the six core steps with the stages below. Every stage degrades
+gracefully to a no-op for non-finance papers.
+
+| Phase | Stage | Agent | Key artifact |
+| --- | --- | --- | --- |
+| 4 | Data access | `app/agents/data_access_agent.py` | `data/data_access.json` |
+| 5 | Leakage audit | `app/agents/leakage_detector.py` | `leakage/leakage_report.json` |
+| 6 | OOS extension | `app/agents/oos_agent.py` | `oos/oos_report.json` |
+| 7 | Robustness matrix | `app/agents/robustness_agent.py` | `robustness/robustness_matrix.json` |
+| 8 | Replication paper | `app/agents/replication_paper_agent.py` | `paper_out/replication_paper.tex` |
+
+Semantics:
+
+- **Data access** matches the study's data sources and factor controls
+  against the dataset registry. Open-access library files (Kenneth French)
+  are downloaded; subscription sources (CRSP, Compustat, IBES, WRDS) are
+  flagged as requiring manually provisioned extracts and are never
+  downloaded by the agent.
+- **Leakage audit** statically scans the cloned repository for look-ahead
+  patterns (negative shifts, `lead()`, backward fills, nearest-direction
+  merges, full-sample scalers) and audits the extracted design for
+  survivorship bias, undocumented formation lag, and cost-free backtests.
+  Every finding carries file/line evidence and a remediation.
+- **OOS extension** splits the timeline at the paper's sample end (or a
+  70/30 temporal holdout when the paper end is unavailable) and re-runs
+  the headline statistics on the out-of-sample window, comparing sign and
+  magnitude against the in-sample window.
+- **Robustness matrix** re-runs the headline statistics across
+  sub-periods, factor columns and factor-file definitions, reporting sign
+  consistency against the baseline.
+- **Replication paper** renders a LaTeX paper (ICLR-style template in
+  `templates/finance_replication/latex/`) containing the Original /
+  Replicated comparison, the leakage findings, the out-of-sample table
+  and the robustness matrix, then best-effort compiles the PDF (pdflatex)
+  and runs the automated reviewer (`paperlab.perform_review`).
+
+Reproducibility levels: L1 results use the open-access factor library and
+validate the machinery and factor-level direction. Hypothesis-level (L3)
+replication requires the study's own data extracts — see the flags
+produced by the Data access stage.

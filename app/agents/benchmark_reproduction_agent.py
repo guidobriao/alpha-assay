@@ -65,8 +65,8 @@ class BenchmarkReproductionAgent:
         # If CUDA unavailable, prefer CPU specs
         repo_dir = Path(state.repo_evaluation.repo_dir).resolve()
         if not is_cuda_available_for_state(state, repo_dir):
-            emit_progress("Run benchmark reproduction", "CUDA 不可用，优先选择 CPU benchmark",
-                          level="warning", detail="当前 PyTorch 不支持 CUDA，降级为 CPU")
+            emit_progress("Run benchmark reproduction", "CUDA unavailable, preferring CPU benchmark",
+                          level="warning", detail="Current PyTorch does not support CUDA, downgrading to CPU")
         selected = select_best_benchmark(specs, budget)
         result.selected_spec = selected
         result.downgrade_reasons = downgrade_reasons(specs, selected, budget)
@@ -101,7 +101,7 @@ class BenchmarkReproductionAgent:
             if result.failure_type == "cuda_unavailable":
                 cpu_spec = _cpu_fallback_spec(selected)
                 if cpu_spec and cpu_spec.id not in tried_ids:
-                    emit_progress("Run benchmark reproduction", "CUDA 失败，尝试 CPU fallback",
+                    emit_progress("Run benchmark reproduction", "CUDA failure, trying CPU fallback",
                                   level="warning", detail=f"{cpu_spec.level} {cpu_spec.title}")
                     selected = cpu_spec
                     continue

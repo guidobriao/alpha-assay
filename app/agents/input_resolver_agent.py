@@ -36,7 +36,7 @@ class InputResolverAgent:
             return PaperInputResolution(
                 success=False,
                 input_kind="local_pdf",
-                failure_reason="输入为空。请提供本地论文 PDF 路径。",
+                failure_reason="Input is empty. Provide a local paper PDF path.",
             )
 
         candidate_path = Path(cleaned).expanduser()
@@ -46,29 +46,29 @@ class InputResolverAgent:
                 input_value=str(candidate_path.resolve()),
                 input_kind="local_pdf",
                 exists=True,
-                reason="输入已识别为本地 PDF，文件存在。",
+                reason="Input recognized as a local PDF; the file exists.",
             )
 
         if candidate_path.exists() and candidate_path.is_dir():
             return PaperInputResolution(
                 success=False,
                 input_kind="local_pdf",
-                failure_reason=f"输入是目录，不是 PDF 文件：{candidate_path}",
+                failure_reason=f"Input is a directory, not a PDF file: {candidate_path}",
             )
 
         if candidate_path.exists():
             return PaperInputResolution(
                 success=False,
                 input_kind="local_pdf",
-                failure_reason=f"本地文件不是 PDF：{candidate_path}",
+                failure_reason=f"Local file is not a PDF: {candidate_path}",
             )
 
         return PaperInputResolution(
             success=False,
             input_kind="local_pdf",
             failure_reason=(
-                f"本地 PDF 不存在或不可读取：{candidate_path}。"
-                "当前版本不会自行搜索 arXiv，请先下载论文 PDF 后传入本地路径。"
+                f"Local PDF does not exist or is unreadable: {candidate_path}. "
+                "This version does not search arXiv automatically; download the paper PDF first and pass the local path."
             ),
         )
 

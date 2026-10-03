@@ -2213,15 +2213,15 @@ def _implementation_obligation_projection(items: list[object], *, limit: int = 6
         "factory",
         "results/",
         "checkpoints/",
-        "实现",
-        "写出",
-        "计算",
-        "度量",
-        "指标",
-        "配置",
-        "接口",
-        "路径",
-        "产物",
+        "implementation",
+        "write",
+        "compute",
+        "measure",
+        "metric",
+        "config",
+        "interface",
+        "path",
+        "artifact",
     )
     bookkeeping_anchor_terms = (
         "method",
@@ -2230,11 +2230,11 @@ def _implementation_obligation_projection(items: list[object], *, limit: int = 6
         "metric",
         "code path",
         "dry-run",
-        "方法",
-        "配置",
-        "指标",
-        "路径",
-        "代码",
+        "method",
+        "config",
+        "metric",
+        "path",
+        "code",
     )
     for raw in list(items or []):
         text = " ".join(str(raw or "").strip().split())
@@ -2243,7 +2243,7 @@ def _implementation_obligation_projection(items: list[object], *, limit: int = 6
         lowered = text.lower()
         has_direct_action = any(token in lowered for token in direct_action_terms)
         has_bookkeeping_route = (
-            any(token in lowered for token in ("record", "记录"))
+            any(token in lowered for token in ("record", "record"))
             and any(token in lowered for token in bookkeeping_anchor_terms)
         )
         has_callable_symbol = bool(re.search(r"\b[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*\b", text))

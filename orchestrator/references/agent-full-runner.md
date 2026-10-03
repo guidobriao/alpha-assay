@@ -64,7 +64,7 @@ For each experiment/table the paper reports:
 # Record start time
 # Activate environment
 # Run the command with all output captured
-python <experiment_script> 2>&1 | tee paper_reproduction_output/run_outputs/outputs/<experiment_name>.log
+python <experiment_script> 2>&1 | tee replication_output/run_outputs/outputs/<experiment_name>.log
 ```
 
 **Checkpointing:** If the full run takes more than 30 minutes, write
@@ -90,7 +90,7 @@ If training diverges (loss → NaN, accuracy → 0):
 
 ### 5. Collect Outputs
 
-Save ALL produced files to `paper_reproduction_output/run_outputs/outputs/`:
+Save ALL produced files to `replication_output/run_outputs/outputs/`:
 
 - Model checkpoints (.pt, .ckpt, .h5)
 - Log files (TensorBoard, wandb, CSV logs)
@@ -102,7 +102,7 @@ Organize by experiment name matching the paper's table/figure numbering.
 
 ### 6. Output Format
 
-Write `paper_reproduction_output/run_outputs/full_run_report.md`:
+Write `replication_output/run_outputs/full_run_report.md`:
 
 ```markdown
 # Full Run Report
@@ -243,7 +243,7 @@ def download_with_retry(url, dest_path, max_retries=3, user_agent="Mozilla/5.0")
 ```
 
 If all retries fail:
-- Write the URL to `paper_reproduction_output/run_outputs/data_download_failed.txt`
+- Write the URL to `replication_output/run_outputs/data_download_failed.txt`
   so the user can download it manually
 - If the resource map says `[TRACED]`, try alternative download methods:
   - `gh release download` if the data is in a GitHub release
@@ -261,7 +261,7 @@ Same as Section 1 above, but with extra attention to format:
 
 ### 9. Write the Reproduction Script
 
-Create `paper_reproduction_output/run_outputs/reproduction_script.py`. Structure:
+Create `replication_output/run_outputs/reproduction_script.py`. Structure:
 
 ```python
 """
@@ -316,7 +316,7 @@ print(f"Finished: {datetime.now()}")
 - One `── Experiment N ──` block per claim in the paper's "Key Claimed Results" section
 - Print the result value(s) clearly — these are what Agent F will compare
 - Handle errors per-experiment (a crash in Experiment 2 should not kill Experiment 1)
-- Save intermediate results to `paper_reproduction_output/run_outputs/outputs/`
+- Save intermediate results to `replication_output/run_outputs/outputs/`
   (e.g., CSV tables, plots, serialized metrics dicts)
 - If the package produces figures, save them with `plt.savefig()` to the outputs directory
 
@@ -325,8 +325,8 @@ print(f"Finished: {datetime.now()}")
 ```bash
 # Activate environment (from setup_report.md)
 cd <working_directory>
-python paper_reproduction_output/run_outputs/reproduction_script.py \
-    2>&1 | tee paper_reproduction_output/run_outputs/outputs/reproduction.log
+python replication_output/run_outputs/reproduction_script.py \
+    2>&1 | tee replication_output/run_outputs/outputs/reproduction.log
 ```
 
 ### 11. Collect Outputs and Write Report
@@ -340,7 +340,7 @@ In the report header, add:
 ## Reproduction Mode
 - **Mode**: tool (API-based reproduction)
 - **Package**: {name} v{version}
-- **Reproduction script**: `paper_reproduction_output/run_outputs/reproduction_script.py`
+- **Reproduction script**: `replication_output/run_outputs/reproduction_script.py`
 ```
 
 ### 12. Write TaskLog Entries

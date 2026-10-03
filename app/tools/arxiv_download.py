@@ -28,7 +28,7 @@ def normalize_arxiv_id(value: str) -> str:
     """Extract a normalized arXiv ID from various input formats."""
     raw = value.strip()
     if not raw:
-        raise ValueError("arXiv 输入为空")
+        raise ValueError("arXiv input is empty")
 
     # arxiv:id prefix
     if raw.lower().startswith("arxiv:"):
@@ -38,19 +38,19 @@ def normalize_arxiv_id(value: str) -> str:
     if raw.startswith("http://") or raw.startswith("https://"):
         parsed = urlparse(raw)
         if "arxiv.org" not in parsed.netloc.lower():
-            raise ValueError("不是 arXiv 链接")
+            raise ValueError("not an arXiv link")
         path = parsed.path.strip("/")
         parts = path.split("/")
         if len(parts) >= 2 and parts[0] in {"abs", "pdf"}:
             raw = parts[1]
         else:
-            raise ValueError(f"无法从 arXiv 链接中解析 ID：{value}")
+            raise ValueError(f"cannot parse ID from arXiv link: {value}")
 
     # Strip .pdf suffix
     raw = raw.removesuffix(".pdf")
 
     if not _ARXIV_ID_RE.fullmatch(raw):
-        raise ValueError(f"不支持的 arXiv ID 格式：{value}。支持格式：1911.11763、arXiv:1911.11763、https://arxiv.org/abs/1911.11763 等。")
+        raise ValueError(f"unsupported arXiv ID format: {value}. supported formats: 1911.11763, arXiv:1911.11763, https://arxiv.org/abs/1911.11763, etc.")
 
     return raw
 
@@ -125,11 +125,11 @@ def download_arxiv_pdf(
                         })
 
         if part_path.stat().st_size < 1024:
-            raise RuntimeError("下载结果过小，可能不是有效 PDF")
+            raise RuntimeError("downloaded content too small, likely not a valid PDF")
 
         with open(part_path, "rb") as f:
             if f.read(5) != b"%PDF-":
-                raise RuntimeError("下载结果不是有效 PDF 文件")
+                raise RuntimeError("downloaded content is not a valid PDF file")
 
         part_path.replace(pdf_path)
 

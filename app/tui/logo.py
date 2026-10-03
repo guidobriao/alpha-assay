@@ -106,7 +106,7 @@ def render_logo(max_width: int | None = None) -> list[Text]:
     """
     lines = build_logo_lines()
     if not lines:
-        return [Text("Paper Reproduct Agent", style="bold #bd93f9")]
+        return [Text("Alpha-Assay", style="bold #bd93f9")]
 
     full_width = max(len(l) for l in lines)
     if max_width is not None and full_width > max_width:

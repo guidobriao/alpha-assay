@@ -6,8 +6,12 @@ from pathlib import Path
 from app.benchmark.adapters import (
     ASRAdapter,
     AdapterContext,
+    CrossSectionalReturnPredictionAdapter,
+    EventStudyAdapter,
+    FactorModelReplicationAdapter,
     LocalFeatureMatchingAdapter,
     SequenceLabelingAdapter,
+    TimeSeriesStrategyAdapter,
     ZeroShotClassificationAdapter,
 )
 from app.benchmark.generic_planner import GenericLLMBenchmarkPlanner
@@ -26,6 +30,10 @@ ADAPTERS = {
     "zero_shot_classification": ZeroShotClassificationAdapter(),
     "asr": ASRAdapter(),
     "sequence_labeling": SequenceLabelingAdapter(),
+    "cross_sectional_return_prediction": CrossSectionalReturnPredictionAdapter(),
+    "event_study": EventStudyAdapter(),
+    "factor_model_replication": FactorModelReplicationAdapter(),
+    "time_series_strategy": TimeSeriesStrategyAdapter(),
 }
 
 LEVEL_RANK = {"L0": 0, "L1": 1, "L2": 2, "L3": 3}
@@ -84,7 +92,14 @@ def plan_benchmarks(state: TaskState, budget: ExecutionBudget | None = None) -> 
                 gate["reason"],
             )
             return _generic_plan(state, context, repo_dir, readme, scripts, task_family, brief, budget)
-        return adapter.propose_benchmarks(context)
+        specs = adapter.propose_benchmarks(context)
+        if specs:
+            return specs
+        logger.info(
+            "Specialist adapter %r produced no specs — falling back to generic planner",
+            task_family,
+        )
+        return _generic_plan(state, context, repo_dir, readme, scripts, task_family, brief, budget)
 
     # Generic LLM planner fallback for unknown task families
     logger.info("No specialist adapter for task family %r — using generic planner", task_family)
@@ -248,6 +263,23 @@ _SPECIALIST_CONFLICT_TERMS: dict[str, list[str]] = {
         "auc 10", "auc 20",
     ],
     "sequence_labeling": ["speech recognition", "librispeech", "feature matching", "homography"],
+    "cross_sectional_return_prediction": [
+        "cross section of stock returns", "decile portfolios", "nyse breakpoints",
+        "formation month", "crsp", "compustat", "buyback", "share repurchase",
+        "net issuance", "value weighted portfolio",
+    ],
+    "event_study": [
+        "event study", "event window", "cumulative abnormal return",
+        "market model", "estimation window", "buy and hold abnormal return",
+    ],
+    "factor_model_replication": [
+        "fama french", "french data library", "grs test", "hml factor",
+        "factor spanning", "factor construction",
+    ],
+    "time_series_strategy": [
+        "trading strategy", "time series momentum", "trend following",
+        "walk forward", "backtest",
+    ],
 }
 
 

@@ -106,9 +106,9 @@ a numpy pin, add `numpy<2.0` as the first line before installing:
 
 ```bash
 # Read the original requirements, prepend the pin, write a patched copy
-echo "numpy<2.0" > paper_reproduction_output/env_setup/requirements_patched.txt
-cat requirements.txt >> paper_reproduction_output/env_setup/requirements_patched.txt
-python -m pip install -r paper_reproduction_output/env_setup/requirements_patched.txt
+echo "numpy<2.0" > replication_output/env_setup/requirements_patched.txt
+cat requirements.txt >> replication_output/env_setup/requirements_patched.txt
+python -m pip install -r replication_output/env_setup/requirements_patched.txt
 ```
 
 **If conda is used instead of venv+pip:** Add `numpy<2.0` as the first dependency
@@ -118,11 +118,11 @@ in the environment specification before creating the environment.
 
 ```bash
 # Create venv in the reproduction output directory
-python -m venv paper_reproduction_output/env_setup/venv
+python -m venv replication_output/env_setup/venv
 
 # Activate (platform-specific)
-# Windows: paper_reproduction_output\env_setup\venv\Scripts\activate
-# Linux/Mac: source paper_reproduction_output/env_setup/venv/bin/activate
+# Windows: replication_output\env_setup\venv\Scripts\activate
+# Linux/Mac: source replication_output/env_setup/venv/bin/activate
 ```
 
 If the paper provides a conda `environment.yml`, prefer conda:
@@ -166,11 +166,11 @@ sed -i 's|- bioconda|- https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/bioco
 
 Then create the environment:
 ```bash
-conda env create -f environment.yml -p paper_reproduction_output/env_setup/conda_env
+conda env create -f environment.yml -p replication_output/env_setup/conda_env
 ```
 
 If `environment.yml` doesn't exist but the resource map lists conda dependencies,
-write one yourself at `paper_reproduction_output/env_setup/environment.yml` from
+write one yourself at `replication_output/env_setup/environment.yml` from
 the dependency info in `resource_map.md`.
 
 **Step 2c — Handle conda solve failures:**
@@ -220,7 +220,7 @@ Or from the extracted content in `resource_map.md` if no file exists yet.
 If using conda (environment created in Step 2), activate and install:
 
 ```bash
-conda activate paper_reproduction_output/env_setup/conda_env
+conda activate replication_output/env_setup/conda_env
 # Install the paper's key dependencies via conda (faster solve than pip for
 # packages with compiled extensions like scipy, numba, pytorch)
 conda install -c conda-forge -c bioconda <package_list>
@@ -245,7 +245,7 @@ python -m pip install <package>
 
 If `requirements.txt` doesn't exist in the repo yet (you only have its content
 from `resource_map.md`), write it to disk first at
-`paper_reproduction_output/env_setup/requirements.txt`, then install from it.
+`replication_output/env_setup/requirements.txt`, then install from it.
 
 **Step 3d — Install the paper's package (if applicable):**
 
@@ -555,7 +555,7 @@ If all three fail, mark the function as "API UNVERIFIED" and pass a warning to A
 
 ### 5. Output Format
 
-Write `paper_reproduction_output/env_setup/setup_report.md`:
+Write `replication_output/env_setup/setup_report.md`:
 
 ```markdown
 # Environment Setup Report
@@ -717,7 +717,7 @@ println("All packages loaded.")
 
 ### Minimal Path Output
 
-Write `paper_reproduction_output/env_setup/setup_report.md` with the same
+Write `replication_output/env_setup/setup_report.md` with the same
 format as the Python path, but add a header:
 
 ```markdown

@@ -8,45 +8,45 @@ from textual.widget import Widget
 from textual.widgets import Static
 
 _COMMAND_HELP: dict[str, list[tuple[str, str]]] = {
-    "输入": [
-        ("/input <PDF路径>", "设置本地论文 PDF 路径"),
-        ("/repo <仓库URL>", "直接指定 GitHub 仓库地址"),
-        ("/repo-dir <本地仓库目录>", "指定本地代码仓库目录"),
+    "Input": [
+        ("/input <PDF path>", "Set local paper PDF path"),
+        ("/repo <repo URL>", "Set the GitHub repository URL directly"),
+        ("/repo-dir <local repo dir>", "Use a local repository directory"),
     ],
-    "运行": [
-        ("/run", "执行复现流水线"),
-        ("/cancel", "取消当前任务"),
-        ("/backend [后端]", "设置后端：none | local | venv | conda | docker"),
-        ("/workspace <目录>", "设置输出工作目录"),
-        ("/timeout <分钟数>", "设置步骤超时时间"),
-        ("/repairs <次数>", "设置最大依赖修复次数"),
+    "running": [
+        ("/run", "Run the replication pipeline"),
+        ("/cancel", "Cancel the current task"),
+        ("/backend [backend]", "Set backend: none | local | venv | conda | docker"),
+        ("/workspace <dir>", "Set the output workspace directory"),
+        ("/timeout <minutes>", "Set per-step timeout"),
+        ("/repairs <n>", "Set max dependency repair attempts"),
     ],
-    "查看": [
-        ("/status", "查看当前任务状态"),
-        ("/report", "查看复现报告路径和摘要"),
-        ("/logs <日志类型>", "查看日志：env | smoke | benchmark | reproduction"),
-        ("/artifact", "显示当前任务产物路径"),
-        ("/open-report", "显示报告文件路径"),
+    "View": [
+        ("/status", "Show current task status"),
+        ("/report", "Show replication report path and summary"),
+        ("/logs <log type>", "Viewlog: env | smoke | benchmark | reproduction"),
+        ("/artifact", "Show current task artifact paths"),
+        ("/open-report", "Show report file path"),
     ],
-    "模式": [
-        ("/plan", "切换到计划模式（不执行）"),
-        ("/act", "切换到执行模式"),
-        ("/panel <面板>", "切换右侧面板：session | pipeline | help | artifacts"),
-        ("/mode", "显示当前 PLAN / ACT 模式"),
+    "Mode": [
+        ("/plan", "Switch to PLAN mode (no execution)"),
+        ("/act", "Switch to act mode"),
+        ("/panel <panel>", "Switch the side panel: session | pipeline | help | artifacts"),
+        ("/mode", "Show current PLAN / ACT mode"),
     ],
-    "会话": [
-        ("/sessions", "列出历史会话"),
-        ("/resume <会话ID>", "恢复历史会话"),
-        ("/reset", "清空当前会话输入，不删除磁盘文件"),
-        ("/clear", "清空消息时间线"),
+    "Sessions": [
+        ("/sessions", "List past sessions"),
+        ("/resume <session-id>", "Resume a past session"),
+        ("/reset", "Clear current session input (keeps files)"),
+        ("/clear", "Clear message timeline"),
     ],
-    "系统": [
-        ("/help", "显示帮助"),
-        ("!shell <命令>", "执行 shell 命令（需确认）"),
-        ("/quit 或 /exit", "退出 TUI"),
-        ("Ctrl+P", "切换 PLAN / ACT 模式"),
-        ("Ctrl+L", "清空消息时间线"),
-        ("Ctrl+C", "强制退出"),
+    "System": [
+        ("/help", "Show help"),
+        ("!shell <cmd>", "Run shell command (requires confirmation)"),
+        ("/quit or /exit", "Quit the TUI"),
+        ("Ctrl+P", "Toggle PLAN / ACT mode"),
+        ("Ctrl+L", "Clear message timeline"),
+        ("Ctrl+C", "Force quit"),
     ],
 }
 
@@ -75,7 +75,7 @@ class HelpPanel(Widget):
 
     def compose(self) -> ComposeResult:
         with VerticalScroll():
-            yield Static("[bold]命令帮助[/]", id="help-title")
+            yield Static("[bold]Command help[/]", id="help-title")
             yield Static("", id="help-body")
 
     def on_mount(self) -> None:

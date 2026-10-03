@@ -53,9 +53,9 @@ class BootSplash(Screen):
     """
 
     BINDINGS = [
-        Binding("ctrl+c", "quit_app", "退出", show=False),
-        Binding("q", "quit_app", "退出", show=False),
-        Binding("escape", "skip_splash", "跳过", show=False),
+        Binding("ctrl+c", "quit_app", "Quit", show=False),
+        Binding("q", "quit_app", "Quit", show=False),
+        Binding("escape", "skip_splash", "skipped", show=False),
     ]
 
     def __init__(self, **kwargs) -> None:
@@ -122,7 +122,7 @@ class BootSplash(Screen):
         status = self.query_one("#splash-status", Static)
         checks = self.query_one("#splash-checks", Static)
 
-        status.update("正在检查系统环境……")
+        status.update("Checking system environment...")
 
         results = await asyncio.to_thread(run_preflight)
 
@@ -143,7 +143,7 @@ class BootSplash(Screen):
                 return
 
             animated[i].status = "running"
-            animated[i].message = "正在检查……"
+            animated[i].message = "Checking..."
             self._refresh_checks(checks)
             await asyncio.sleep(0.2)
 
@@ -161,15 +161,15 @@ class BootSplash(Screen):
 
         if blocking > 0:
             status.update(
-                f"[{T.ERROR_BORDER}]检查完成：{passes} 通过，{fails} 失败"
-                f"（{blocking} 项阻塞，将进入 TUI 显示警告）[/]"
+                f"[{T.ERROR_BORDER}]Checks complete: {passes} passed, {fails} failed"
+                f" ({blocking}  blocking; entering TUI with warnings)[/]"
             )
         elif fails > 0:
             status.update(
-                f"[{T.WARNING_BORDER}]检查完成：{passes} 通过，{fails} 项非阻塞警告[/]"
+                f"[{T.WARNING_BORDER}]Checks complete: {passes} passed, {fails}  non-blocking warnings[/]"
             )
         else:
-            status.update(f"[{T.GREEN}]全部检查通过 ✓[/]")
+            status.update(f"[{T.GREEN}]All checks passed ✓[/]")
 
         await asyncio.sleep(1.0)
 
@@ -177,7 +177,7 @@ class BootSplash(Screen):
             return
 
         self._playing = False
-        status.update(f"[{T.FG_DIM}]正在进入 TUI…[/]")
+        status.update(f"[{T.FG_DIM}]Entering TUI...[/]")
         await asyncio.sleep(0.2)
 
         self._done = True

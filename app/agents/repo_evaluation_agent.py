@@ -29,53 +29,53 @@ class RepoEvaluationAgent:
 
         try:
             if state.selected_repo.source == "local":
-                emit_progress("Evaluate repo", "正在复制本地代码仓库",
+                emit_progress("Evaluate repo", "Copying local repository",
                               detail=state.selected_repo.local_path,
                               repo_dir=str(repo_dir))
                 copy_local_repo(Path(state.selected_repo.local_path), repo_dir)
             else:
-                emit_progress("Evaluate repo", "正在克隆代码仓库",
-                              detail=f"仓库地址：{state.selected_repo.url}\n目标目录：{repo_dir}",
+                emit_progress("Evaluate repo", "Cloning repository",
+                              detail=f"Repository URL: {state.selected_repo.url}\nTarget directory: {repo_dir}",
                               repo_url=state.selected_repo.url,
                               repo_dir=str(repo_dir))
                 clone_repo(state.selected_repo.url, repo_dir)
 
-            emit_progress("Evaluate repo", "正在扫描仓库结构",
-                          detail=f"仓库目录：{repo_dir}\n检查 README、requirements、入口脚本等文件……")
+            emit_progress("Evaluate repo", "Scanning repository structure",
+                          detail=f"Repository directory: {repo_dir}\nchecking README, requirements, entry scripts...")
             scan = scan_repo_structure(repo_dir)
 
             # Build scan summary
             scan_summary: list[str] = []
-            scan_summary.append(f"README：{'已发现' if scan.get('has_readme') else '未发现'}")
+            scan_summary.append(f"README: {'found' if scan.get('has_readme') else 'not found'}")
             req_files = scan.get("requirement_files", [])
-            scan_summary.append(f"依赖文件：{', '.join(req_files[:5]) if req_files else '未发现'}")
-            scan_summary.append(f"environment.yml：{'已发现' if scan.get('has_environment_yml') else '未发现'}")
-            scan_summary.append(f"Dockerfile：{'已发现' if scan.get('has_dockerfile') else '未发现'}")
+            scan_summary.append(f"Dependency files: {', '.join(req_files[:5]) if req_files else 'not found'}")
+            scan_summary.append(f"environment.yml: {'found' if scan.get('has_environment_yml') else 'not found'}")
+            scan_summary.append(f"Dockerfile: {'found' if scan.get('has_dockerfile') else 'not found'}")
             scripts = scan.get("candidate_scripts", [])
-            scan_summary.append(f"候选入口脚本：{', '.join(scripts[:8]) if scripts else '未发现'}")
-            scan_summary.append(f"候选配置文件：{len(scan.get('candidate_configs', []))} 个")
+            scan_summary.append(f"Candidate entry scripts: {', '.join(scripts[:8]) if scripts else 'not found'}")
+            scan_summary.append(f"Candidate config files: {len(scan.get('candidate_configs', []))} found")
 
             emit_progress(
                 "Evaluate repo",
-                "仓库结构扫描完成",
+                "Repository structure scan complete",
                 detail="\n".join(f"  - {x}" for x in scan_summary),
                 log_lines=scan_summary,
                 candidate_script_count=len(scripts),
             )
 
-            emit_progress("Evaluate repo", "检测风险标记",
-                          detail="检查 GPU 需求、权重文件、数据集依赖等……")
+            emit_progress("Evaluate repo", "Detecting risk flags",
+                          detail="checking GPU requirements, weight files, dataset dependencies...")
             risk_flags = detect_risk_flags(repo_dir, scan)
             if risk_flags:
-                emit_progress("Evaluate repo", "发现潜在风险",
+                emit_progress("Evaluate repo", "Potential risks found",
                               level="warning",
                               detail="\n".join(f"  - {x}" for x in risk_flags[:5]),
-                              log_lines=[f"风险：{x}" for x in risk_flags])
+                              log_lines=[f"risk: {x}" for x in risk_flags])
             else:
-                emit_progress("Evaluate repo", "未发现明显风险标记")
+                emit_progress("Evaluate repo", "No obvious risk flags found")
 
-            emit_progress("Evaluate repo", "正在调用 LLM 分析入口脚本",
-                          detail="将仓库结构、README 摘要、候选脚本传给模型，提取推荐运行命令和风险点。")
+            emit_progress("Evaluate repo", "Asking LLM to analyze entry scripts",
+                          detail="Passing repository structure, README summary and candidate scripts to the model to extract recommended run commands and risks.")
             benchmark_surface = _llm_analyze_benchmark_surface(repo_dir, scan, risk_flags)
             if benchmark_surface:
                 demo_cmds = benchmark_surface.get("demo_commands", [])
@@ -83,13 +83,13 @@ class RepoEvaluationAgent:
                 metrics = benchmark_surface.get("likely_metrics", [])
                 conf = benchmark_surface.get("confidence", 0)
                 llm_summary = (
-                    f"LLM 仓库分析完成\n"
-                    f"  - 推荐 demo 命令：{', '.join(demo_cmds[:3]) if demo_cmds else '未识别'}\n"
-                    f"  - 推荐评估命令：{', '.join(eval_cmds[:3]) if eval_cmds else '未识别'}\n"
-                    f"  - 可能产出指标：{', '.join(metrics[:5]) if metrics else '未识别'}\n"
-                    f"  - 置信度：{conf:.2f}"
+                    f"LLM repository analysis complete\n"
+                    f"  - recommended demo commands: {', '.join(demo_cmds[:3]) if demo_cmds else 'not identified'}\n"
+                    f"  - recommended eval commands: {', '.join(eval_cmds[:3]) if eval_cmds else 'not identified'}\n"
+                    f"  - possible output metrics: {', '.join(metrics[:5]) if metrics else 'not identified'}\n"
+                    f"  - confidence: {conf:.2f}"
                 )
-                emit_progress("Evaluate repo", "LLM 分析完成", detail=llm_summary)
+                emit_progress("Evaluate repo", "LLM analysis complete", detail=llm_summary)
 
             evaluation = RepoEvaluation(
                 repo_dir=str(repo_dir),

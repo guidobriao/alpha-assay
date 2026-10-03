@@ -5,6 +5,7 @@ from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field
 
+from app.benchmark.finance_schema import FinanceSpec
 from app.benchmark.schema import BenchmarkRunResult, BenchmarkSpec
 
 
@@ -14,6 +15,7 @@ TaskStatus = Literal[
     "created",
     "paper_ingested",
     "paper_understood",
+    "data_accessed",
     "repo_found",
     "repo_evaluated",
     "runtime_decided",
@@ -71,6 +73,7 @@ class ReproductionBrief(BaseModel):
     github_links_in_paper: list[str] = Field(default_factory=list)
     confidence: float = 0.0
     benchmark_protocol: dict[str, Any] = Field(default_factory=dict)
+    finance: Optional[FinanceSpec] = None
 
 
 class RepoCandidate(BaseModel):
@@ -163,6 +166,35 @@ class ReproductionRunResult(BaseModel):
     comparisons: list[dict[str, Any]] = Field(default_factory=list)
 
 
+DatasetProvisioningStatus = Literal[
+    "available",
+    "downloaded",
+    "needs_download",
+    "requires_subscription",
+    "not_matched",
+    "failed",
+]
+
+
+class DatasetProvisioning(BaseModel):
+    """Per-dataset resolution record produced by the data access agent."""
+    dataset_id: str
+    name: str
+    status: DatasetProvisioningStatus
+    local_path: Optional[str] = None
+    detail: Optional[str] = None
+    license: Optional[str] = None
+
+
+class DataAccessResult(BaseModel):
+    """Outcome of provisioning the finance datasets required by a study."""
+    is_finance_study: bool = False
+    ready: bool = False
+    records: list[DatasetProvisioning] = Field(default_factory=list)
+    summary: Optional[str] = None
+    brief_path: Optional[str] = None
+
+
 RuntimeDevice = Literal["cpu", "cuda", "skip"]
 CudaRequirement = Literal["not_needed", "optional", "required", "unknown"]
 
@@ -235,6 +267,12 @@ class TaskState(BaseModel):
     benchmark_plan: list[BenchmarkSpec] = Field(default_factory=list)
     benchmark_run: Optional[BenchmarkRunResult] = None
     reproduction_run: Optional[ReproductionRunResult] = None
+    data_access: Optional[DataAccessResult] = None
+    # Out-of-sample extension and robustness-matrix results (serialized
+    # reports; the typed content lives in oos/oos_report.json and
+    # robustness/robustness_matrix.json on disk).
+    oos: Optional[dict[str, Any]] = None
+    robustness: Optional[dict[str, Any]] = None
     report: Optional[ReportResult] = None
 
     step_timings: list[StepTiming] = Field(default_factory=list)

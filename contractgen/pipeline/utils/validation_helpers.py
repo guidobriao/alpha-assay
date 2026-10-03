@@ -218,17 +218,17 @@ _SEMANTIC_VALIDATION_GENERIC_TOKENS = {
     "training",
     "validation",
     "visible",
-    "支持",
-    "代码",
-    "配置",
-    "路径",
-    "方法",
-    "模型",
-    "指标",
-    "实验",
-    "训练",
-    "评估",
-    "结果",
+    "support",
+    "code",
+    "config",
+    "path",
+    "method",
+    "model",
+    "metric",
+    "experiment",
+    "training",
+    "evaluation",
+    "result",
 }
 
 _SEMANTIC_VALIDATION_IMPORTANT_TERMS = {
@@ -4412,43 +4412,43 @@ def repair_recommendations_from_checks(checks: list[ValidationCheck]) -> list[st
         if check.passed:
             continue
         if check.category == "artifact":
-            recommendations.append("补齐缺失 artifact path，并保证 producer surface 与结果产物路径一致。")
+            recommendations.append("Fill in the missing artifact path and ensure the producer surface is consistent with the result artifact paths.")
             continue
         if check.category == "implementation":
-            recommendations.append("收紧主入口和本地文件实现闭环，先保证关键执行面存在且可被局部验证。")
+            recommendations.append("Tighten the main-entry and local-file closure; first ensure the critical execution surface exists and is locally verifiable.")
             continue
         if check.category == "trace":
-            recommendations.append("补强 work-package 的 traceability 绑定，必要时刷新 evidence 和 contract 对应关系。")
+            recommendations.append("Strengthen work-package traceability bindings; refresh evidence-to-contract mappings where needed.")
             continue
         if check.name == "post_generate:paper_evidence_contract_matrix":
-            recommendations.append("补齐 paper-derived evidence matrix：命名实验、环境/任务、方法/基线、参数 sweep、趋势断言和 artifact writer 必须在代码或配置中可见。")
+            recommendations.append("Complete the paper-derived evidence matrix: named experiments, environment/task, method/baseline, parameter sweeps, trend assertions and artifact writers must be visible in code or configuration.")
             continue
         if check.name == "post_generate:paper_implementation_obligation_paths":
-            recommendations.append("补齐 paper-derived implementation paths：dataset prepare/validate、model loader、metric formula、attack/adaptation、training/evaluation loop 和 per-sample bookkeeping 必须落到可执行代码或配置入口。")
+            recommendations.append("Complete the paper-derived implementation paths: dataset prepare/validate, model loader, metric formula, attack/adaptation, training/evaluation loop and per-sample bookkeeping must be visiblest land in executable code or configentry. ")
             continue
         if check.name == "post_generate:formula_algorithm_contract":
-            recommendations.append("补齐 paper-derived formula/algorithm anchors：论文公式符号、数值常量、mask/rank、loss、search/schedule 步骤必须落到可执行代码或配置，并被主训练/评估路径调用。")
+            recommendations.append("Complete the paper-derived formula/algorithm anchors: paper formula symbols, numeric constants, mask/rank, loss, search/schedule steps must land in executable code or config and be invoked by the main training/evaluation route")
             continue
         if check.name == "post_generate:active_route_wiring":
-            recommendations.append("补齐 active-route wiring：已经实现的 helper/class 必须接到 entrypoint、factory/reset、training/evaluation loop 或 figure/table writer，不能只停留在孤立符号。")
+            recommendations.append("Complete the active-route wiring: already-implemented helpers/classes must be wired to the entrypoint, factory/reset, training/evaluation loop  or figure/table writers, not remain isolated symbols. ")
             continue
         if check.name == "post_generate:declared_experiment_route_contract":
-            recommendations.append("补齐 declared experiment route：显式 dataset/search_times/figure/table 合约必须接到真实执行或报告路径，不能用错数据集、固定 ablation 或 runtime_smoke/synthetic fallback 代替。")
+            recommendations.append("Complete the declared experiment route: explicit dataset/search_times/figure/table contracts must be wired to real execution or report paths, explicit dataset/search_times/figure/table contracts must be wired to real execution or report paths, must not misuse datasets, fixed ablations or runtime smoke substitutes")
             continue
         if check.category == "semantic":
-            recommendations.append("修复语义证据缺口，优先补代码/配置/报告面的可见实验矩阵，而不是只补 README 描述。")
+            recommendations.append("Fix semantic evidence gaps; prioritize a visible experiment matrix in code/config/report surfaces rather than README-only descriptions.")
             continue
         if "canonical_route" in check.name:
-            recommendations.append("优先修复 canonical route 的 entry surface、输入依赖和 expected outputs wiring。")
+            recommendations.append("Fix the canonical route entry surface, input dependencies and expected-outputs wiring first.")
             continue
         if "artifact_contract" in check.name or "artifact_wiring" in check.name:
-            recommendations.append("修复 artifact contract、producer surface 和 file plan outputs 之间的静态连线。")
+            recommendations.append("Fix the static wiring between the artifact contract, producer surface and file-plan outputs.")
             continue
         if "stage_public_surfaces" in check.name or "producer_surfaces" in check.name:
-            recommendations.append("补齐 stage public surfaces 与 repo-plan files 的映射，再扩展可选模块。")
+            recommendations.append("Complete the mapping between stage public surfaces and repo-plan files, then extend optional modules.")
             continue
         if check.category == "integration":
-            recommendations.append("先修复协议阶段、结果目标和公共 surface 的集成闭环，再做包级扩写。")
+            recommendations.append("Fix the integration closure between protocol stages, result objectives and public surfaces before expanding at package level.")
     ordered: list[str] = []
     seen: set[str] = set()
     for item in recommendations:

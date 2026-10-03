@@ -48,11 +48,11 @@ def clone_repo(url: str, dest_dir: Path, max_retries: int = 3) -> Path:
     proxies = detect_git_proxy()
     if proxies:
         proxy_lines = [f"{k}={mask_proxy_url(v)}" for k, v in sorted(proxies.items())]
-        emit_progress("Evaluate repo", "检测到 Git 代理配置",
+        emit_progress("Evaluate repo", "Git proxy configuration detected",
                       detail="\n".join(f"  - {x}" for x in proxy_lines),
-                      proxy_status="检测到代理", log_lines=proxy_lines)
+                      proxy_status="proxy detected", log_lines=proxy_lines)
     else:
-        emit_progress("Evaluate repo", "未检测到代理", proxy_status="无代理")
+        emit_progress("Evaluate repo", "no proxy detected", proxy_status="no proxy")
 
     clone_env = {**os.environ}
     for k, v in proxies.items():
@@ -62,8 +62,8 @@ def clone_repo(url: str, dest_dir: Path, max_retries: int = 3) -> Path:
     for attempt in range(1, max_retries + 1):
         raise_if_cancelled()
         emit_progress("Evaluate repo",
-                      f"正在克隆仓库，第 {attempt}/{max_retries} 次尝试",
-                      detail=f"仓库地址：{url}", repo_url=url)
+                      f"Cloning repository (attempt {attempt}/{max_retries})",
+                      detail=f"Repository URL: {url}", repo_url=url)
         try:
             _clone_subprocess(url, dest_dir, env=clone_env)
             return dest_dir
@@ -72,13 +72,13 @@ def clone_repo(url: str, dest_dir: Path, max_retries: int = 3) -> Path:
             raise
         except Exception as e:
             last_error = e
-            emit_progress("Evaluate repo", f"克隆失败（第 {attempt}/{max_retries} 次）",
+            emit_progress("Evaluate repo", f"Clone failed (attempt {attempt}/{max_retries} attempts)",
                           level="warning", detail=str(e)[-500:])
             _cleanup_clone(dest_dir)
             time.sleep(1)
 
     raise_if_cancelled()
-    emit_progress("Evaluate repo", "Git clone 失败，尝试 Zip 下载", level="warning")
+    emit_progress("Evaluate repo", "Git clone failed, trying ZIP download", level="warning")
     try:
         return _download_repo_zip(url, dest_dir)
     except PipelineCancelled:
@@ -101,7 +101,7 @@ def _clone_subprocess(url: str, dest_dir: Path, *, env: dict | None = None, time
     env = env or os.environ.copy()
     cmd = ["git", "clone", "--depth", "1", "--progress", url, str(dest_dir)]
 
-    emit_progress("Evaluate repo", "开始克隆仓库",
+    emit_progress("Evaluate repo", "Starting repository clone",
                   detail=f"git clone --depth 1 --progress {url}", repo_url=url)
 
     proc = subprocess.Popen(
@@ -147,7 +147,7 @@ def _clone_subprocess(url: str, dest_dir: Path, *, env: dict | None = None, time
                             if pct is not None:
                                 last_pct = pct
                             bar = make_progress_bar(pct)
-                            emit_progress("Evaluate repo", "正在克隆仓库",
+                            emit_progress("Evaluate repo", "Cloning repository",
                                           detail=None,
                                           progress_kind="git_clone",
                                           progress_percent=pct,
@@ -162,10 +162,10 @@ def _clone_subprocess(url: str, dest_dir: Path, *, env: dict | None = None, time
         if proc.returncode != 0:
             tail = "".join(_drain_queue(q) for q in (stderr_q, stdout_q)).strip()
             msg = tail or f"git clone failed exit {proc.returncode}"
-            emit_progress("Evaluate repo", "克隆仓库失败", level="warning", detail=msg[-1200:])
+            emit_progress("Evaluate repo", "Repository clone failed", level="warning", detail=msg[-1200:])
             raise RuntimeError(msg)
 
-        emit_progress("Evaluate repo", "仓库克隆完成", detail=f"目标目录：{dest_dir}")
+        emit_progress("Evaluate repo", "Repository clone complete", detail=f"Target directory: {dest_dir}")
         return dest_dir
 
     except Exception:
@@ -231,10 +231,10 @@ def normalize_git_line(line: str) -> str:
     if not line:
         return ""
     for src, dst in [
-        ("Cloning into", "克隆到"), ("Enumerating objects", "枚举对象"),
-        ("Counting objects", "统计对象"), ("Compressing objects", "压缩对象"),
-        ("Receiving objects", "接收对象"), ("Resolving deltas", "解析增量"),
-        ("Updating files", "更新文件"), ("remote:", "远端:"),
+        ("Cloning into", "Cloning into"), ("Enumerating objects", "Enumerating objects"),
+        ("Counting objects", "Counting objects"), ("Compressing objects", "Compressing objects"),
+        ("Receiving objects", "Receiving objects"), ("Resolving deltas", "Resolving deltas"),
+        ("Updating files", "Updating files"), ("remote:", "remote:"),
     ]:
         line = line.replace(src, dst)
     return line
@@ -261,7 +261,7 @@ def _download_repo_zip(url: str, dest_dir: Path) -> Path:
         raise_if_cancelled()
         try:
             full_url = f"{zip_url}/archive/refs/heads/{branch}.zip"
-            emit_progress("Evaluate repo", "正在下载仓库 ZIP", detail=f"URL：{full_url}")
+            emit_progress("Evaluate repo", "Downloading repository ZIP", detail=f"URL: {full_url}")
             zip_path = dest_dir.parent / (dest_dir.name + ".zip")
             zip_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -283,14 +283,14 @@ def _download_repo_zip(url: str, dest_dir: Path) -> Path:
                             if pct != last_pct:
                                 last_pct = pct
                                 bar = make_progress_bar(pct)
-                                emit_progress("Evaluate repo", "正在下载仓库 ZIP",
+                                emit_progress("Evaluate repo", "Downloading repository ZIP",
                                               detail=None,
                                               progress_kind="zip_download",
                                               progress_percent=pct,
                                               progress_bar=bar,
-                                              progress_text=f"已下载 {downloaded / 1024 / 1024:.1f} MiB")
+                                              progress_text=f"Downloaded {downloaded / 1024 / 1024:.1f} MiB")
 
-            emit_progress("Evaluate repo", "仓库 ZIP 下载完成，正在解压")
+            emit_progress("Evaluate repo", "Repository ZIP download complete, extracting")
             with zipfile.ZipFile(zip_path) as zf:
                 zf.extractall(dest_dir.parent)
 
@@ -304,7 +304,7 @@ def _download_repo_zip(url: str, dest_dir: Path) -> Path:
                 extracted.rename(dest_dir)
 
             zip_path.unlink(missing_ok=True)
-            emit_progress("Evaluate repo", "仓库解压完成", detail=f"目标目录：{dest_dir}")
+            emit_progress("Evaluate repo", "Repository extraction complete", detail=f"Target directory: {dest_dir}")
             return dest_dir
 
         except PipelineCancelled:
@@ -316,7 +316,7 @@ def _download_repo_zip(url: str, dest_dir: Path) -> Path:
             logger.warning("zip download for branch %s failed: %s", branch, e)
             continue
 
-    raise RuntimeError(f"无法通过 git clone 或 zip 下载仓库: {url}")
+    raise RuntimeError(f"Cannot download repository via git clone or zip: {url}")
 
 
 def copy_local_repo(src_dir: Path, dest_dir: Path) -> Path:
@@ -514,20 +514,20 @@ def detect_risk_flags(repo_dir: Path, scan: dict) -> list[str]:
     flags = []
 
     if not scan["has_readme"]:
-        flags.append("无 README")
+        flags.append("no README")
     if not (scan["has_requirements"] or scan["has_environment_yml"] or scan["has_setup_py_or_pyproject"]):
-        flags.append("无依赖声明文件")
+        flags.append("no dependency declaration file")
     if not scan["candidate_scripts"]:
-        flags.append("无入口脚本")
+        flags.append("no entry script")
 
     readme_text = ""
     for readme in repo_dir.glob("README*"):
         readme_text += readme.read_text(encoding="utf-8", errors="ignore").lower()
 
     risk_terms = {
-        "需要 GPU": ["cuda", "gpu", "nvidia"],
-        "可能需要大数据集": ["imagenet", "coco", "download dataset", "large dataset"],
-        "可能需要预训练权重": ["checkpoint", "pretrained weights", "model weights"],
+        "requires GPU": ["cuda", "gpu", "nvidia"],
+        "may require large datasets": ["imagenet", "coco", "download dataset", "large dataset"],
+        "may require pretrained weights": ["checkpoint", "pretrained weights", "model weights"],
     }
 
     for label, terms in risk_terms.items():
