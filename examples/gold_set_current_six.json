@@ -1,0 +1,62 @@
+[
+  {
+    "name": "superglue",
+    "input": "https://arxiv.org/abs/1911.11763",
+    "expected_repo": "https://github.com/magicleap/SuperGluePretrainedNetwork",
+    "repo_hint_type": "github_link_in_arxiv_or_pdf",
+    "expected_scripts": ["demo_superglue.py", "match_pairs.py"],
+    "requires_training": false,
+    "difficulty": "easy",
+    "purpose": "tests GitHub link extraction, repo scan, top-level script detection"
+  },
+  {
+    "name": "lightglue",
+    "input": "https://arxiv.org/abs/2306.13643",
+    "expected_repo": "https://github.com/cvg/LightGlue",
+    "repo_hint_type": "github_link_in_arxiv_or_pdf",
+    "expected_scripts": ["benchmark.py"],
+    "requires_training": false,
+    "difficulty": "easy",
+    "purpose": "tests inference-code repo with pyproject and notebook/demo style"
+  },
+  {
+    "name": "clip",
+    "input": "https://arxiv.org/abs/2103.00020",
+    "expected_repo": "https://github.com/openai/CLIP",
+    "repo_hint_type": "github_link_in_arxiv_or_pdf",
+    "expected_scripts": [],
+    "requires_training": false,
+    "difficulty": "easy-medium",
+    "purpose": "tests package-style repo with no traditional demo.py"
+  },
+  {
+    "name": "xfeat",
+    "input": "https://arxiv.org/abs/2404.19174",
+    "expected_repo": "https://github.com/verlab/accelerated_features",
+    "repo_hint_type": "github_link_in_arxiv_or_pdf",
+    "expected_scripts": ["minimal_example.py"],
+    "requires_training": false,
+    "difficulty": "easy-medium",
+    "purpose": "tests lightweight visual matching reproduction without a paper-specific recipe"
+  },
+  {
+    "name": "whisper",
+    "input": "https://arxiv.org/abs/2212.04356",
+    "expected_repo": "https://github.com/openai/whisper",
+    "repo_hint_type": "github_search_by_title",
+    "expected_scripts": [],
+    "requires_training": false,
+    "difficulty": "easy-medium",
+    "purpose": "tests package-style speech inference with repository test assets"
+  },
+  {
+    "name": "flair",
+    "input": "https://aclanthology.org/N19-4010/",
+    "expected_repo": "https://github.com/zalandoresearch/flair",
+    "repo_hint_type": "github_search_by_title_or_readme_citation",
+    "expected_scripts": [],
+    "requires_training": false,
+    "difficulty": "easy-medium",
+    "purpose": "tests package-style NLP inference using README examples"
+  }
+]

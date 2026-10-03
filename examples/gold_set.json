@@ -1,0 +1,102 @@
+[
+  {
+    "name": "superglue",
+    "input": "https://arxiv.org/abs/1911.11763",
+    "expected_repo": "https://github.com/magicleap/SuperGluePretrainedNetwork",
+    "repo_hint_type": "github_link_in_arxiv_or_pdf",
+    "expected_scripts": ["demo_superglue.py", "match_pairs.py"],
+    "requires_training": false,
+    "difficulty": "easy",
+    "purpose": "tests GitHub link extraction, repo scan, top-level script detection"
+  },
+  {
+    "name": "lightglue",
+    "input": "https://arxiv.org/abs/2306.13643",
+    "expected_repo": "https://github.com/cvg/LightGlue",
+    "repo_hint_type": "github_link_in_arxiv_or_pdf",
+    "expected_scripts": ["benchmark.py"],
+    "requires_training": false,
+    "difficulty": "easy",
+    "purpose": "tests inference-code repo with pyproject and notebook/demo style"
+  },
+  {
+    "name": "clip",
+    "input": "https://arxiv.org/abs/2103.00020",
+    "expected_repo": "https://github.com/openai/CLIP",
+    "repo_hint_type": "github_link_in_arxiv_or_pdf",
+    "expected_scripts": [],
+    "requires_training": false,
+    "difficulty": "easy-medium",
+    "purpose": "tests package-style repo with no traditional demo.py"
+  },
+  {
+    "name": "depth-anything",
+    "input": "https://arxiv.org/abs/2401.10891",
+    "expected_repo": "https://github.com/LiheYoung/Depth-Anything",
+    "repo_hint_type": "github_link_in_arxiv_or_pdf",
+    "expected_scripts": ["run.py", "run_video.py", "app.py"],
+    "requires_training": false,
+    "difficulty": "medium",
+    "purpose": "tests model-download risk and run.py script detection"
+  },
+  {
+    "name": "grounding-dino",
+    "input": "https://arxiv.org/abs/2303.05499",
+    "expected_repo": "https://github.com/IDEA-Research/GroundingDINO",
+    "repo_hint_type": "github_link_in_arxiv_or_pdf",
+    "expected_scripts": ["docker_test.py"],
+    "requires_training": false,
+    "difficulty": "medium",
+    "purpose": "tests Dockerfile/environment.yaml/setup.py detection and checkpoint risk"
+  },
+  {
+    "name": "segment-anything",
+    "input": "https://arxiv.org/abs/2304.02643",
+    "expected_repo": "https://github.com/facebookresearch/segment-anything",
+    "repo_hint_type": "project_page_or_github_search",
+    "expected_scripts": ["scripts/amg.py", "scripts/export_onnx_model.py"],
+    "requires_training": false,
+    "difficulty": "medium-hard",
+    "purpose": "tests repo discovery without direct GitHub URL and checkpoint-required reporting"
+  },
+  {
+    "name": "loftr",
+    "input": "https://arxiv.org/abs/2104.00680",
+    "expected_repo": "https://github.com/zju3dv/LoFTR",
+    "repo_hint_type": "project_page_or_github_search",
+    "expected_scripts": ["test.py"],
+    "requires_training": false,
+    "difficulty": "medium-hard",
+    "purpose": "tests project-page-only repo discovery and env/risk flags"
+  },
+  {
+    "name": "dpt",
+    "input": "https://arxiv.org/abs/2103.13413",
+    "expected_repo": "https://github.com/isl-org/DPT",
+    "repo_hint_type": "github_link_in_arxiv_or_pdf",
+    "expected_scripts": ["run_monodepth.py", "run_segmentation.py"],
+    "requires_training": false,
+    "difficulty": "hard",
+    "purpose": "tests archived repo detection, old dependencies, and checkpoint risk"
+  },
+  {
+    "name": "raft",
+    "input": "https://arxiv.org/abs/2003.12039",
+    "expected_repo": "https://github.com/princeton-vl/RAFT",
+    "repo_hint_type": "github_link_in_arxiv_or_pdf",
+    "expected_scripts": ["demo.py", "evaluate.py"],
+    "requires_training": false,
+    "difficulty": "hard",
+    "purpose": "tests old PyTorch/CUDA dependency classification and train.py safety"
+  },
+  {
+    "name": "whisper",
+    "input": "https://arxiv.org/abs/2212.04356",
+    "expected_repo": "https://github.com/openai/whisper",
+    "repo_hint_type": "github_search_by_title",
+    "expected_scripts": [],
+    "requires_training": false,
+    "difficulty": "search-only",
+    "purpose": "tests title-based GitHub discovery and console-script style smoke command"
+  }
+]

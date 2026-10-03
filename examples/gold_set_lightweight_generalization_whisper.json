@@ -1,0 +1,12 @@
+[
+  {
+    "name": "whisper",
+    "input": "https://arxiv.org/abs/2212.04356",
+    "expected_repo": "https://github.com/openai/whisper",
+    "repo_hint_type": "github_search_by_title",
+    "expected_scripts": [],
+    "requires_training": false,
+    "difficulty": "easy-medium",
+    "purpose": "tests package-style speech inference with repository test assets"
+  }
+]

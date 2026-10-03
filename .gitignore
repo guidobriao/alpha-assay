@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Secrets: mai in git (solo *.example tracciati)
+.env
+.env.*
+
+# Runtime output
+workspace/
+tasks/
+output/
+runs/
+run_*/
+cache/
+papers/
+*.log
+
+# Local reference docs (not part of the repo)
+reference-docs/
