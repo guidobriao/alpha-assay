@@ -12,6 +12,10 @@ from pathlib import Path
 from typing import Any, Callable
 
 from contractgen.pipeline.config import build_github_repo_config
+from contractgen.pipeline.finance_contract import (
+    build_finance_contract,
+    validate_finance_contract,
+)
 from contractgen.pipeline.prompts import (
     build_input_normalization_prompt,
     build_unit_extraction_prompt,
@@ -1635,6 +1639,115 @@ def _contract_artifact_rows(contract: dict[str, Any]) -> list[str]:
 
 
 
+def _finance_brief_payload(state: PaperBenchReproState) -> dict[str, Any] | None:
+    """Locate paper/finance_brief.json for this case, defensively.
+
+    The finance brief is written by the app/ understanding stage into the
+    task directory; PaperBench-style runs may place it beside the case
+    files. Returns None when absent (hook is a no-op for non-finance runs).
+    """
+    import json as _json
+    for attr in ("case_dir", "case_path", "paper_dir", "input_dir",
+                 "workspace_dir", "run_dir"):
+        base = getattr(state, attr, None)
+        if not base:
+            continue
+        candidate = Path(str(base)) / "finance_brief.json"
+        if candidate.exists():
+            try:
+                payload = _json.loads(candidate.read_text(encoding="utf-8"))
+                return payload if isinstance(payload, dict) else None
+            except Exception:
+                return None
+    return None
+
+
+def _paper_finance_contract_units(state: PaperBenchReproState) -> list[ExtractedUnit]:
+    """Emit one implementation unit carrying the finance contract obligations.
+
+    The obligations (point-in-time universe, formation lag, portfolio
+    construction, factor controls, transaction costs, winsorization) flow
+    into plan/generate prompts through the standard ExtractedUnit channel,
+    exactly like the evidence-contract units above.
+    """
+    brief = _finance_brief_payload(state)
+    if not brief:
+        return []
+    try:
+        contract = build_finance_contract(brief)
+    except Exception:
+        return []
+    obligations = [
+        str(o.get("requirement", "")).strip()
+        for o in contract.get("obligations", [])
+        if str(o.get("requirement", "")).strip()
+    ]
+    if not obligations:
+        return []
+    gaps = validate_finance_contract(contract)
+    hypothesis = str(contract.get("hypothesis") or "").strip()
+    counts = contract.get("counts") or {}
+    unit = ExtractedUnit(
+        unit_id="paper_finance_empirical_design",
+        type="protocol",
+        statement=(
+            "Implement the paper empirical asset-pricing design exactly as "
+            "extracted: universe construction, timing/lag, portfolio sort, "
+            "factor controls, costs and winsorization. Every obligation below "
+            "is verifiable in the generated code."
+        ),
+        hypothesis=hypothesis,
+        decision_value=(
+            "Determines whether plan/generation enforces the paper data "
+            "pipeline, timing and portfolio-construction contracts before "
+            "code writing; counts by category: "
+            + ", ".join(f"{k}={v}" for k, v in sorted(counts.get("by_category", {}).items()))
+        ),
+        stop_rule_or_pruning_rationale=(
+            "Implementation scope: represent the full empirical design as "
+            "code-checkable obligations; never substitute current "
+            "constituents or full-sample scalers for point-in-time "
+            "computations."
+        ),
+        paper_evidence=[
+            "finance brief: hypothesis=" + (hypothesis[:300] or "N/A"),
+            "finance brief: "
+            + "; ".join(obligations[:6])[:1500],
+        ],
+        source_paragraph_ids=["finance_brief.json"],
+        verification_targets=[
+            VerificationTarget(
+                kind="artifact",
+                description=(
+                    "Generated code enforces the finance contract obligations "
+                    "(sample bounds, point-in-time universe, formation lag, "
+                    "weighting, factor regressions, costs)."
+                ),
+            )
+        ],
+        implementation_surfaces=_ordered_unique(
+            ["data_pipeline", "evaluation", "config", "tests"]
+        ),
+        code_obligations=_ordered_unique(obligations),
+        runtime_interfaces=_ordered_unique(
+            ["build_universe(config)", "form_portfolio(signal, config)",
+             "evaluate_portfolio(returns, factors, config)"]
+        ),
+        expected_artifacts=_ordered_unique(
+            ["results/finance_contract.json", "results/portfolio_returns.csv"]
+        ),
+        suggested_module_kinds=_ordered_unique(
+            ["data_pipeline", "model_or_method", "evaluation", "tests"]
+        ),
+        implementation_notes=[
+            "finance_contract_schema:" + str(contract.get("schema_version")),
+            "finance_contract_gaps:" + ("; ".join(gaps) if gaps else "none"),
+        ],
+        status="active",
+    )
+    return [unit]
+
+
 def _paper_contract_specialized_units(state: PaperBenchReproState) -> list[ExtractedUnit]:
     """Split inferred paper evidence contract into actionable implementation units."""
     paperbench_text = _paperbench_input_text(state)
@@ -2094,6 +2207,7 @@ def _paper_derived_unit_candidates(state: PaperBenchReproState) -> list[Extracte
         units.append(dataset_inventory_unit)
     units.extend(_paper_chunk_semantic_units(state))
     units.extend(_paper_contract_specialized_units(state))
+    units.extend(_paper_finance_contract_units(state))
     units.extend(_paper_specialized_method_units(state))
     return units
 
