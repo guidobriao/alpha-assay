@@ -691,6 +691,25 @@ def _file_owner_from_provenance(state: PaperBenchReproState, canonical_path: str
     return owner
 
 
+def _finance_brief_for_ir(state):
+    """Locate paper/finance_brief.json for this case (mirrors prepare._finance_brief_payload)."""
+    import json as _json
+    from pathlib import Path as _Path
+    for attr in ("case_dir", "case_path", "paper_dir", "input_dir",
+                 "workspace_dir", "run_dir"):
+        base = getattr(state, attr, None)
+        if not base:
+            continue
+        candidate = _Path(str(base)) / "finance_brief.json"
+        if candidate.exists():
+            try:
+                payload = _json.loads(candidate.read_text(encoding="utf-8"))
+                return payload if isinstance(payload, dict) else None
+            except Exception:
+                return None
+    return None
+
+
 def build_canonical_ir(state: PaperBenchReproState) -> CanonicalIROutput:
     """Build the stage-A shadow canonical IR from existing planning artifacts."""
 
@@ -1175,6 +1194,28 @@ def build_canonical_ir(state: PaperBenchReproState) -> CanonicalIROutput:
         ),
         "owner_resolution_fallbacks": owner_resolution_fallbacks,
     }
+
+    # Finance contract augmentation (no-op for non-finance runs): attach the
+    # finance implementation-contract summary so downstream validation and
+    # reporting can see the paper empirical-design obligations.
+    try:
+        from contractgen.pipeline.finance_contract import (
+            build_finance_contract as _build_finance_contract,
+            validate_finance_contract as _validate_finance_contract,
+        )
+        _finance_brief = _finance_brief_for_ir(state)
+        if _finance_brief:
+            _finance_contract = _build_finance_contract(_finance_brief)
+            _finance_counts = _finance_contract.get("counts") or {}
+            validation_index["finance_contract"] = {
+                "schema_version": _finance_contract.get("schema_version"),
+                "hypothesis": _finance_contract.get("hypothesis"),
+                "obligation_total": _finance_counts.get("total", 0),
+                "counts_by_category": _finance_counts.get("by_category", {}),
+                "gaps": _validate_finance_contract(_finance_contract),
+            }
+    except Exception:
+        pass
 
     return CanonicalIROutput(
         requirements=requirements,
